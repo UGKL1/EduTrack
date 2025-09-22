@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, Image, Text, View } from 'react-native';
 
-export default function Login() {
+export default function SignupOrLogin() {
   return (
     <View style={styles.container}>
       {/* Logo */}
