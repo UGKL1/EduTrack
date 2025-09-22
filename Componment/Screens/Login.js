@@ -1,12 +1,11 @@
-import { StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { StyleSheet, TouchableOpacity, Image, Text, View } from 'react-native';
 
 export default function Login() {
   return (
     <View style={styles.container}>
       {/* Logo */}
       <Image
-        source={require('./assets/edulogo.png')} // replace with actual logo path
+        source={require('../../assets/edulogo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -31,7 +30,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D', // dark background like in image
+    backgroundColor: '#0D0D0D',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -48,7 +47,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   button: {
-    backgroundColor: '#007BFF', // blue buttons
+    backgroundColor: '#007BFF',
     paddingVertical: 12,
     paddingHorizontal: 50,
     borderRadius: 20,
