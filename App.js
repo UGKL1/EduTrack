@@ -1,14 +1,14 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import SignupOrLogin from './Componment/Screens/SignupOrLogin';
-import Login from './Componment/Screens/Login'; 
+import SignupOrLogin from './Component/Screens/SignupOrLogin';
+import Login from './Component/Screens/Login';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator 
+      <Stack.Navigator
         initialRouteName="SignupOrLogin"
         screenOptions={{ headerShown: false }}
       >
