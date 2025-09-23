@@ -1,6 +1,10 @@
+import React from 'react';
 import { StyleSheet, TouchableOpacity, Image, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';  // 👈 import navigation hook
 
 export default function SignupOrLogin() {
+  const navigation = useNavigation(); // 👈 gives you access to navigation object
+
   return (
     <View style={styles.container}>
       {/* Logo */}
@@ -10,17 +14,21 @@ export default function SignupOrLogin() {
         resizeMode="contain"
       />
 
-      {/* App Name */}
-      <Text style={styles.appName}>EDUTRACK</Text>
-
-      {/* Buttons */}
-      <TouchableOpacity style={styles.button}>
+      {/* Sign in button → navigates to Login screen */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Login')} // 👈 navigate by screen name
+      >
         <Text style={styles.buttonText}>Sign in</Text>
       </TouchableOpacity>
 
       <Text style={styles.subText}>Don’t have an account ?</Text>
 
-      <TouchableOpacity style={styles.button}>
+      {/* Sign up button (for later use) */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => console.log('Need signup screen next…')} // placeholder
+      >
         <Text style={styles.buttonText}>Sign up</Text>
       </TouchableOpacity>
     </View>
@@ -36,15 +44,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 240,
+    height: 240,
     marginBottom: 10,
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 40,
   },
   button: {
     backgroundColor: '#007BFF',

@@ -14,8 +14,6 @@ export default function Login() {
         resizeMode="contain"
       />
 
-      <Text style={styles.appName}>EDUTRACK</Text>
-
       {/* Email */}
       <TextInput
         style={styles.input}
@@ -61,17 +59,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 240,
+    height: 240,
     alignSelf: 'center',
     marginBottom: 10,
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 30,
   },
   input: {
     backgroundColor: '#1E1E1E',
