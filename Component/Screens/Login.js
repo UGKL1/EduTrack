@@ -5,13 +5,14 @@ export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-
+  // This function is for testing purposes and will always navigate.
   const handleLogin = () => {
-    if (email && password) {
-      navigation.navigate("Dashboard");  
-    } else {
-      Alert.alert("Error", "Please enter email and password");
-    }
+    navigation.navigate("Dashboard");  
+  };
+
+  // This function will always navigate to the admin dashboard.
+  const handleAdminLogin = () => {
+    navigation.navigate("AdminDashboard");  
   };
 
   return (
@@ -53,7 +54,7 @@ export default function Login({ navigation }) {
         <Text style={styles.buttonText}>Log-in</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.buttonAlt}>
+      <TouchableOpacity style={styles.buttonAlt} onPress={handleAdminLogin}>
         <Text style={styles.buttonText}>Log-in as an Administrator</Text>
       </TouchableOpacity>
     </View>
