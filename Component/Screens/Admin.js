@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
 
-export default function Login() {
+export default function Admin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  const navigation = useNavigation();
+    const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
@@ -24,7 +24,7 @@ export default function Login() {
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Staff ID / Email address"
+          placeholder="Admin ID / Email address"
           placeholderTextColor="#999"
           value={email}
           onChangeText={setEmail}
@@ -51,19 +51,12 @@ export default function Login() {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate('ResetPw')}>
-  <Text style={styles.forgot}>Forgot Password?</Text>
-</TouchableOpacity>
-
+            <Text style={styles.forgot}>Forgot Password?</Text>
+          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Log-in</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.buttonAlt}
-          onPress={() => navigation.navigate('Admin')}
-        >
+        {/* Admin Login Button */}
+        <TouchableOpacity style={styles.buttonAlt}>
           <Text style={styles.buttonText}>Log-in as an Administrator</Text>
         </TouchableOpacity>
       </View>
@@ -79,16 +72,17 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 80, // push logo near top
+    marginTop: 80, // same as Login screen
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 150,   // same as Login
+    height: 150,  // same as Login
   },
-  formContainer: {
+    formContainer: {
     flex: 1,
-    marginTop:150, // keeps form in middle
+    marginTop: 150,  // adjust upward positioning
   },
+
   input: {
     backgroundColor: '#1E1E1E',
     padding: 12,
@@ -106,13 +100,6 @@ const styles = StyleSheet.create({
   },
   forgot: {
     color: '#007BFF',
-  },
-  button: {
-    backgroundColor: '#007BFF',
-    paddingVertical: 12,
-    borderRadius: 20,
-    marginVertical: 8,
-    alignItems: 'center',
   },
   buttonAlt: {
     backgroundColor: '#007BFF',
