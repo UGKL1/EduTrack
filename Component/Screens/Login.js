@@ -1,9 +1,18 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image, Alert } from 'react-native';
 
-export default function Login() {
+export default function Login({ navigation }) {   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+
+  const handleLogin = () => {
+    if (email && password) {
+      navigation.navigate("Dashboard");  
+    } else {
+      Alert.alert("Error", "Please enter email and password");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -40,7 +49,7 @@ export default function Login() {
       </View>
 
       {/* Login buttons */}
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Log-in</Text>
       </TouchableOpacity>
 

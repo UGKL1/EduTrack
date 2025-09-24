@@ -13,17 +13,25 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.user.edutrack"
     },
     "android": {
+      "package": "com.user.edutrack",
       "adaptiveIcon": {
         "foregroundImage": "./assets/edulogo.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/edulogo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a7b8fb49-375a-47ce-baea-5178fb40f5c7"
+      }
     }
   }
 }
