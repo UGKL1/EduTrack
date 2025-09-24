@@ -2,6 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SignupOrLogin from './Component/Screens/SignupOrLogin';
 import Login from './Component/Screens/Login';
+import Admin from './Component/Screens/Admin';
+import ResetPw from './Component/Screens/ResetPw';
 
 const Stack = createNativeStackNavigator();
 
@@ -14,6 +16,8 @@ export default function App() {
       >
         <Stack.Screen name="SignupOrLogin" component={SignupOrLogin} />
         <Stack.Screen name="Login" component={Login} />
+         <Stack.Screen name="Admin" component={Admin} />
+        <Stack.Screen name="ResetPw" component={ResetPw} />
       </Stack.Navigator>
     </NavigationContainer>
   );
