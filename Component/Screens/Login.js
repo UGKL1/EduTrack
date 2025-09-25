@@ -1,28 +1,27 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
 
-export default function Login({ navigation }) {   
+export default function Login() {   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
   const navigation = useNavigation();
 
-  // This function is for testing purposes and will always navigate.
+  // Test login
   const handleLogin = () => {
     navigation.navigate("Dashboard");  
   };
 
-  // This function will always navigate to the admin dashboard.
+  // Admin login
   const handleAdminLogin = () => {
     navigation.navigate("AdminDashboard");  
   };
 
   return (
     <View style={styles.container}>
-      {/* Logo at the top */}
+      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -31,7 +30,7 @@ export default function Login({ navigation }) {
         />
       </View>
 
-      {/* Form content in the middle */}
+      {/* Form */}
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
@@ -62,26 +61,16 @@ export default function Login({ navigation }) {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate('ResetPw')}>
-  <Text style={styles.forgot}>Forgot Password?</Text>
-</TouchableOpacity>
-
+            <Text style={styles.forgot}>Forgot Password?</Text>
+          </TouchableOpacity>
         </View>
-      {/* Login buttons */}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Log-in</Text>
-      </TouchableOpacity>
 
-      <TouchableOpacity style={styles.buttonAlt} onPress={handleAdminLogin}>
-        <Text style={styles.buttonText}>Log-in as an Administrator</Text>
-      </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
+        {/* Login buttons */}
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Log-in</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.buttonAlt}
-          onPress={() => navigation.navigate('Admin')}
-        >
+        <TouchableOpacity style={styles.buttonAlt} onPress={handleAdminLogin}>
           <Text style={styles.buttonText}>Log-in as an Administrator</Text>
         </TouchableOpacity>
       </View>
@@ -97,7 +86,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 80, // push logo near top
+    marginTop: 80,
   },
   logo: {
     width: 150,
@@ -105,7 +94,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    marginTop:150, // keeps form in middle
+    marginTop: 150,
   },
   input: {
     backgroundColor: '#1E1E1E',
