@@ -1,13 +1,24 @@
 import { useState } from 'react';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
 
-export default function Login() {
+export default function Login({ navigation }) {   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
   const navigation = useNavigation();
+
+  // This function is for testing purposes and will always navigate.
+  const handleLogin = () => {
+    navigation.navigate("Dashboard");  
+  };
+
+  // This function will always navigate to the admin dashboard.
+  const handleAdminLogin = () => {
+    navigation.navigate("AdminDashboard");  
+  };
 
   return (
     <View style={styles.container}>
@@ -55,7 +66,14 @@ export default function Login() {
 </TouchableOpacity>
 
         </View>
+      {/* Login buttons */}
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Log-in</Text>
+      </TouchableOpacity>
 
+      <TouchableOpacity style={styles.buttonAlt} onPress={handleAdminLogin}>
+        <Text style={styles.buttonText}>Log-in as an Administrator</Text>
+      </TouchableOpacity>
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Log-in</Text>
         </TouchableOpacity>
