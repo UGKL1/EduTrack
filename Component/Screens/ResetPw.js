@@ -1,42 +1,33 @@
-import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image, Alert } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  TouchableOpacity,
+  Image,
+  Alert,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-// 1. Import the necessary Firebase auth functions
-import { sendPasswordResetEmail } from 'firebase/auth'; 
-// 2. Import your Firebase auth instance
-import { auth } from '../../config/firebase'; 
 
 export default function ResetPw() {
-  // We only need the email for the password reset flow
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation();
 
-  // Function to handle sending the password reset email
-  const handleResetPassword = async () => {
-    if (!email) {
-      Alert.alert("Error", "Please enter your email address.");
+  const handleReset = () => {
+    if (!username || !newPassword || !confirmPassword) {
+      Alert.alert('Error', 'Please fill all fields');
       return;
     }
-
-    setLoading(true);
-    try {
-      // Firebase function to send the reset email
-      await sendPasswordResetEmail(auth, email);
-      
-      Alert.alert(
-        "Success! 📧",
-        "A password reset link has been sent to your email. Check your inbox (and spam folder)!",
-        // Navigate back to Login after success
-        [{ text: "OK", onPress: () => navigation.navigate('Login') }]
-      );
-    } catch (error) {
-      // Handle Firebase errors
-      const errorMessage = error.message.replace('Firebase: Error (auth/', '').replace(').', '').replace(/-/g, ' ');
-      Alert.alert("Reset Failed", errorMessage);
-    } finally {
-      setLoading(false);
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
     }
+    // TODO: Add API call for resetting password here
+    Alert.alert('Success', 'Password reset successfully');
+    navigation.navigate('Login');
   };
 
   return (
@@ -50,48 +41,51 @@ export default function ResetPw() {
         />
       </View>
 
-      {/* Title/Instructions */}
-      <Text style={styles.title}>Forgot Your Password?</Text>
-      <Text style={styles.subtitle}>Enter your email address to receive a password reset link.</Text>
-
-
       {/* Form */}
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Email address"
+          placeholder="Username / Email address"
           placeholderTextColor="#999"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
+          value={username}
+          onChangeText={setUsername}
         />
-        
-        {/* Button to initiate password reset */}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleResetPassword}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>
-            {loading ? 'Sending Link...' : 'Send Reset Link'}
-          </Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="New Password"
+          placeholderTextColor="#999"
+          secureTextEntry
+          value={newPassword}
+          onChangeText={setNewPassword}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm Password"
+          placeholderTextColor="#999"
+          secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
+
+        {/* Reset Button */}
+        <TouchableOpacity style={styles.button} onPress={handleReset}>
+          <Text style={styles.buttonText}>Reset Password</Text>
         </TouchableOpacity>
 
         {/* Back to sign-in */}
         <TouchableOpacity
-          style={styles.linkButton}
+          style={[styles.button, styles.secondaryButton]}
           onPress={() => navigation.navigate('Login')}
-          disabled={loading}
         >
-          <Text style={styles.linkText}>← Back to Sign-in</Text>
+          <Text style={styles.buttonText}>Back to sign-in</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-// --- Styles Updated ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -100,29 +94,15 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 80,
+    marginTop: 80, // same as login screen
   },
   logo: {
     width: 150,
     height: 150,
   },
-  title: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 30,
-  },
-  subtitle: {
-    color: '#ccc',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 20,
-    marginTop: 10,
-  },
   formContainer: {
     flex: 1,
-    marginTop: 50, // Adjusted margin to accommodate title/subtitle
+    justifyContent: 'center', // keeps form centered
   },
   input: {
     backgroundColor: '#1E1E1E',
@@ -138,17 +118,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: 'center',
   },
+  secondaryButton: {
+    backgroundColor: '#444', // different color for "back" button
+  },
   buttonText: {
     color: '#fff',
-    fontWeight: '600',
-  },
-  linkButton: {
-    marginTop: 15,
-    alignItems: 'center',
-  },
-  linkText: {
-    color: '#007BFF',
-    fontSize: 16,
     fontWeight: '600',
   },
 });
