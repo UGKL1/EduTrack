@@ -40,7 +40,7 @@ EduTrack is a modern attendance system for educational institutions. Using **fac
 ### 1️⃣ Clone & Install
 
 ```bash
-git clone https://github.com/your-username/edutrack-attendance-system.git
+git clone https://github.com/UGKL1/EduTrack.git
 cd edutrack-attendance-system
 npm install
 ```
@@ -151,5 +151,3 @@ git push origin feature/amazing-feature
 💡 *Built for the Future of Education with ❤️ by Team UGKL_1*
 
 ---
-
-Would you like me to also include **badges** (e.g. build status, license, tech stack icons) at the top for an even more polished GitHub look?
