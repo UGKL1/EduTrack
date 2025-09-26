@@ -139,11 +139,11 @@ git push origin feature/amazing-feature
 
 ## 👥 Team UGKL_1 – The Open University of Sri Lanka
 
-👨‍💻 K.R.A.R. Jayathilaka – Project Lead / Backend
-🎨 L.G.S.B. Liyanage – Frontend / UI-UX
-📱 F.F. Shamra – Mobile Dev
-🧠 Z.I.K. Nuha – Database / Testing
-📋 M.S. Hafsa – QA / Docs
+👨‍💻 K.R.A.R. Jayathilaka – Project Lead / Backend 
+🎨 L.G.S.B. Liyanage – Backend / UI-UX
+📱 F.F. Shamra – Frontend / QA & Testing
+🧠 Z.I.K. Nuha – Frontend / QA & Testing
+📋 M.S. Hafsa – Backend / Docs
 🎓 Supervisor: U.G.K.L. Senarathna
 
 ---
