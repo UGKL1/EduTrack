@@ -147,7 +147,3 @@ git push origin feature/amazing-feature
 🎓 Supervisor: U.G.K.L. Senarathna
 
 ---
-
-💡 *Built for the Future of Education with ❤️ by Team UGKL_1*
-
----
