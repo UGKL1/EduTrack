@@ -76,12 +76,16 @@ export default function Login() {
 
         {/* Login buttons */}
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Log-in</Text>
+          <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonAlt} onPress={handleAdminLogin}>
-          <Text style={styles.buttonText}>Log-in as an Administrator</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+       style={styles.buttonAlt}
+        onPress={() => navigation.navigate('Admin')}
+>
+      <Text style={styles.buttonText}>Sign in as an Administrator</Text>
+    </TouchableOpacity>
+
       </View>
     </View>
   );

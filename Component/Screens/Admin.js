@@ -57,7 +57,7 @@ export default function Admin() {
 
         {/* Admin Login Button */}
         <TouchableOpacity style={styles.buttonAlt}>
-          <Text style={styles.buttonText}>Log-in as an Administrator</Text>
+          <Text style={styles.buttonText}>Sign-in as an Administrator</Text>
         </TouchableOpacity>
       </View>
     </View>

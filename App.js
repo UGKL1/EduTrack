@@ -8,6 +8,8 @@ import AttendanceScreen from './Component/Screens/AttendanceScreen';
 import SettingsScreen from './Component/Screens/SettingsScreen';
 import Admin from './Component/Screens/Admin';
 import ResetPw from './Component/Screens/ResetPw';
+import StaffSignUp from './Component/Screens/StaffSignUp';
+import AdminSignUp from './Component/Screens/AdminSignUp';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +27,8 @@ export default function App() {
         <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
         <Stack.Screen name="Admin" component={Admin} />
         <Stack.Screen name="ResetPw" component={ResetPw} />
+        <Stack.Screen name="StaffSignUp" component={StaffSignUp} />
+        <Stack.Screen name="AdminSignUp" component={AdminSignUp} />
       </Stack.Navigator>
     </NavigationContainer>
   );
