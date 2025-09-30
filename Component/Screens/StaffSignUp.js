@@ -18,7 +18,7 @@ export default function StaffSignUp() {
   const navigation = useNavigation();
 
   const handleSignup = () => {
-    navigation.navigate('Dashboard'); // or your post-signup screen
+    navigation.navigate('Login'); // or your post-signup screen
   };
 
   const handleAdminSignup = () => {
