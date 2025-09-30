@@ -10,6 +10,7 @@ import Admin from './Component/Screens/Admin';
 import ResetPw from './Component/Screens/ResetPw';
 import StaffSignUp from './Component/Screens/StaffSignUp';
 import AdminSignUp from './Component/Screens/AdminSignUp';
+import Toast from 'react-native-toast-message';
 
 const Stack = createNativeStackNavigator();
 
