@@ -6,6 +6,11 @@ export default function SettingsScreen({ navigation }) {
         navigation.goBack();
     };
 
+    const handleLogout = () => {
+        // You can also clear any async storage or tokens here if needed
+        navigation.navigate("SignupOrLogin");
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -49,27 +54,32 @@ export default function SettingsScreen({ navigation }) {
                 <TouchableOpacity style={styles.settingItem}>
                     <Text style={styles.settingText}>Change Password</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.settingItem}>
+
+                {/* ✅ Modified Logout Button */}
+                <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
                     <Text style={styles.settingText}>Logout</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity style={styles.settingItem}>
                     <Text style={[styles.settingText, { color: 'red' }]}>Remove Account</Text>
                 </TouchableOpacity>
             </View>
-             <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Dashboard")}>
-          <FontAwesome5 name="home" size={20} color="#fff" />
-          <Text style={styles.navText}>Dashboard</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <FontAwesome5 name="bell" size={20} color="#fff" />
-          <Text style={styles.navText}>Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <FontAwesome5 name="cog" size={20} color="#007BFF" />
-          <Text style={styles.navText}>Settings</Text>
-        </TouchableOpacity>
-      </View>
+
+            {/* Bottom Navigation */}
+            <View style={styles.bottomNav}>
+                <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Dashboard")}>
+                    <FontAwesome5 name="home" size={20} color="#fff" />
+                    <Text style={styles.navText}>Dashboard</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navButton}>
+                    <FontAwesome5 name="bell" size={20} color="#fff" />
+                    <Text style={styles.navText}>Notifications</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navButton}>
+                    <FontAwesome5 name="cog" size={20} color="#007BFF" />
+                    <Text style={styles.navText}>Settings</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -123,24 +133,24 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#1E1E1E',
-    paddingVertical: 15,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-  navButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navText: {
-    color: '#fff',
-    marginTop: 5,
-    fontSize: 12,
-  },
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        backgroundColor: '#1E1E1E',
+        paddingVertical: 15,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+    },
+    navButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    navText: {
+        color: '#fff',
+        marginTop: 5,
+        fontSize: 12,
+    },
 });
