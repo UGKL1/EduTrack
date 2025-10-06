@@ -86,6 +86,15 @@ export default function Login() {
       <Text style={styles.buttonText}>Sign in as an Administrator</Text>
     </TouchableOpacity>
 
+    {/* Back to sign-in */}
+<TouchableOpacity
+  style={[styles.button, styles.secondaryButton]}
+  onPress={() => navigation.navigate('SignupOrLogin')}
+>
+  <Text style={styles.buttonText}>Back to Sign up</Text>
+</TouchableOpacity>
+
+
       </View>
     </View>
   );
@@ -165,4 +174,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
+  secondaryButton: {
+  backgroundColor: '#444', // different color for "back" button
+},
 });

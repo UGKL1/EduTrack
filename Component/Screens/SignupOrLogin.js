@@ -33,7 +33,6 @@ export default function SignupOrLogin() {
 >
   <Text style={styles.buttonText}>Sign up</Text>
 </TouchableOpacity>
-
       </View>
     </View>
   );
