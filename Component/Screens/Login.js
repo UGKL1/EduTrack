@@ -1,3 +1,4 @@
+// Component/Screens/Login.js
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -7,28 +8,87 @@ import {
   View,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+
+// Import Firebase auth and firestore functions
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, firestore } from '../../config/firebase'; 
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
 
-  // Test login
-  const handleLogin = () => {
-    navigation.navigate('Dashboard');
-  };
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Toast.show({ type: 'error', text1: 'Email and password are required.' });
+      return;
+    }
 
-  // Admin login
-  const handleAdminLogin = () => {
-    navigation.navigate('AdminDashboard');
+    setLoading(true);
+
+    try {
+      // Sign in with Auth
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Get user document from Firestore
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+
+        // Check user role
+        if (userData.role === 'Teacher') {
+          // Success! The useAuth hook will handle navigation
+          Toast.show({ type: 'success', text1: 'Welcome back!' });
+        } else {
+          // Wrong role! Sign them out.
+          await signOut(auth);
+          Toast.show({
+            type: 'error',
+            text1: 'Admin Account',
+            text2: 'Please use the Admin sign-in screen.',
+          });
+        }
+      } else {
+        // No user data found 
+        await signOut(auth);
+        Toast.show({
+          type: 'error',
+          text1: 'User data not found.',
+        });
+      }
+    } catch (error) {
+      // Handle Auth errors
+      console.log('Login Error:', error.message);
+      if (
+        error.code === 'auth/user-not-found' ||
+        error.code === 'auth/wrong-password' ||
+        error.code === 'auth/invalid-credential'
+      ) {
+        Toast.show({ type: 'error', text1: 'Invalid email or password.' });
+      } else {
+        Toast.show({ type: 'error', text1: 'An error occurred.' });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -37,7 +97,6 @@ export default function Login() {
         />
       </View>
 
-      {/* Form */}
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
@@ -48,7 +107,6 @@ export default function Login() {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -68,38 +126,42 @@ export default function Login() {
             </View>
             <Text style={styles.remember}>Remember me</Text>
           </TouchableOpacity>
-
           <TouchableOpacity onPress={() => navigation.navigate('ResetPw')}>
             <Text style={styles.forgot}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Login buttons */}
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Sign in</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Sign in</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
-       style={styles.buttonAlt}
-        onPress={() => navigation.navigate('Admin')}
->
-      <Text style={styles.buttonText}>Sign in as an Administrator</Text>
-    </TouchableOpacity>
+          style={styles.buttonAlt}
+          onPress={() => navigation.navigate('Admin')}
+        >
+          <Text style={styles.buttonText}>Sign in as an Administrator</Text>
+        </TouchableOpacity>
 
-    {/* Back to sign-in */}
-<TouchableOpacity
-  style={[styles.button, styles.secondaryButton]}
-  onPress={() => navigation.navigate('SignupOrLogin')}
->
-  <Text style={styles.buttonText}>Back to Sign up</Text>
-</TouchableOpacity>
-
-
+        <TouchableOpacity
+          style={[styles.button, styles.secondaryButton]}
+          onPress={() => navigation.navigate('SignupOrLogin')}
+        >
+          <Text style={styles.buttonText}>Back to Sign up</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -116,7 +178,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    marginTop: 80, // adjusted for better spacing
+    marginTop: 80, 
   },
   input: {
     backgroundColor: '#1E1E1E',
@@ -145,7 +207,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonAlt: {
-    backgroundColor: '#0056b3', // slightly darker to differentiate
+    backgroundColor: '#0056b3', 
     paddingVertical: 12,
     borderRadius: 20,
     marginVertical: 8,
@@ -175,6 +237,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   secondaryButton: {
-  backgroundColor: '#444', // different color for "back" button
+  backgroundColor: '#444', 
 },
 });

@@ -1,7 +1,62 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+// Component/Screens/Dashboard.js
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator, // Added for loading
+} from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 
+// Import auth and firestore
+import { auth, firestore } from '../../config/firebase'; // Adjust path if needed
+import { doc, getDoc } from 'firebase/firestore';
+
 export default function Dashboard({ navigation }) {
+  // Add state for user data and loading
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Add hook to fetch data when component loads
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Get the current user's ID from auth
+        const userId = auth.currentUser.uid;
+
+        // Fetch the user's data from Firestore
+        const userDocRef = doc(firestore, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+          // Save the user data (username, email, role) to state
+          setUserData(userDocSnap.data());
+        } else {
+          console.log('No user data found in Firestore!');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        // Set loading to false once data is fetched or an error occurs
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []); // The empty array means this runs once on mount
+
+  // Show a loading spinner while fetching data
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#007BFF" />
+      </View>
+    );
+  }
+
+  // Once loading done, render the dashboard
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
@@ -10,11 +65,17 @@ export default function Dashboard({ navigation }) {
           source={{ uri: 'https://placehold.co/100x100/A020F0/white?text=User' }}
           style={styles.profileImage}
         />
-        <Text style={styles.profileName}>Mr. Fernando</Text>
+        {/* Replace hardcoded name with user data */}
+        <Text style={styles.profileName}>
+          {userData ? userData.username : 'User'}
+        </Text>
       </View>
 
       <View style={styles.gridContainer}>
-        <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate("AttendanceScreen")}>
+        <TouchableOpacity
+          style={styles.gridButton}
+          onPress={() => navigation.navigate('AttendanceScreen')}
+        >
           <FontAwesome5 name="clipboard-check" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Mark Attendance</Text>
         </TouchableOpacity>
@@ -49,7 +110,10 @@ export default function Dashboard({ navigation }) {
           <FontAwesome5 name="bell" size={20} color="#fff" />
           <Text style={styles.navText}>Notifications</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("SettingsScreen")}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('SettingsScreen')}
+        >
           <FontAwesome5 name="cog" size={20} color="#fff" />
           <Text style={styles.navText}>Settings</Text>
         </TouchableOpacity>
@@ -58,12 +122,17 @@ export default function Dashboard({ navigation }) {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D', // Dark background
+    backgroundColor: '#0D0D0D',
     paddingHorizontal: 15,
     paddingTop: 40,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   topSection: {
     alignSelf: 'flex-start',

@@ -1,3 +1,4 @@
+// Component/Screens/AdminSignUp.js
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -7,7 +8,14 @@ import {
   View,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+
+// Import Firebase auth and firestore functions
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, firestore } from '../../config/firebase'; 
 
 export default function AdminSignUp() {
   const [username, setUsername] = useState('');
@@ -15,26 +23,75 @@ export default function AdminSignUp() {
   const [adminID, setAdminID] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
 
-  const handleSignup = () => {
-    navigation.navigate('AdminDashboard'); // or wherever you want admins to land
+  const handleSignup = async () => {
+    // Validation
+    if (!username || !email || !adminID || !newPassword || !confirmPassword) {
+      Toast.show({ type: 'error', text1: 'All fields are required.' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Toast.show({ type: 'error', text1: 'Passwords do not match.' });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        newPassword
+      );
+      const user = userCredential.user;
+
+      // Save user role and info to Firestore
+      await setDoc(doc(firestore, 'users', user.uid), {
+        uid: user.uid,
+        username: username,
+        email: email,
+        adminID: adminID,
+        role: 'Admin',
+      });
+
+      // Success!
+      Toast.show({
+        type: 'success',
+        text1: 'Admin account created!',
+      });
+
+    } catch (error) {
+      // Handle errors
+      console.log('Admin Signup Error:', error.message);
+      if (error.code === 'auth/email-already-in-use') {
+        Toast.show({ type: 'error', text1: 'Email is already in use.' });
+      } else if (error.code === 'auth/weak-password') {
+        Toast.show({
+          type: 'error',
+          text1: 'Password should be at least 6 characters.',
+        });
+      } else {
+        Toast.show({ type: 'error', text1: 'An error occurred. Try again.' });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
-    
       </View>
 
-      {/* Form */}
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
@@ -43,7 +100,6 @@ export default function AdminSignUp() {
           value={username}
           onChangeText={setUsername}
         />
-
         <TextInput
           style={styles.input}
           placeholder="Email address"
@@ -53,7 +109,6 @@ export default function AdminSignUp() {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-
         <TextInput
           style={styles.input}
           placeholder="Admin ID"
@@ -61,7 +116,6 @@ export default function AdminSignUp() {
           value={adminID}
           onChangeText={setAdminID}
         />
-
         <TextInput
           style={styles.input}
           placeholder="New Password"
@@ -70,7 +124,6 @@ export default function AdminSignUp() {
           value={newPassword}
           onChangeText={setNewPassword}
         />
-
         <TextInput
           style={styles.input}
           placeholder="Confirm Password"
@@ -80,12 +133,18 @@ export default function AdminSignUp() {
           onChangeText={setConfirmPassword}
         />
 
-        {/* Sign-up button */}
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign-up</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSignup}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Sign-up</Text>
+          )}
         </TouchableOpacity>
 
-        {/* Link to login */}
         <TouchableOpacity onPress={() => navigation.navigate('Admin')}>
           <Text style={styles.linkText}>Already have an account ?</Text>
         </TouchableOpacity>
@@ -94,6 +153,7 @@ export default function AdminSignUp() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
