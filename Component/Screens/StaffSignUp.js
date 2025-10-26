@@ -1,3 +1,4 @@
+// Component/Screens/StaffSignUp.js
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -7,27 +8,81 @@ import {
   View,
   TouchableOpacity,
   Image,
+  ActivityIndicator, 
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+
+// Import Firebase auth and firestore functions
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, firestore } from '../../config/firebase'; 
 
 export default function StaffSignUp() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false); 
 
   const navigation = useNavigation();
 
-  const handleSignup = () => {
-    navigation.navigate('Login'); // or your post-signup screen
-  };
+  const handleSignup = async () => {
+    // Validation
+    if (!username || !email || !newPassword || !confirmPassword) {
+      Toast.show({ type: 'error', text1: 'All fields are required.' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Toast.show({ type: 'error', text1: 'Passwords do not match.' });
+      return;
+    }
 
-  const handleAdminSignup = () => {
-    navigation.navigate('AdminDashboard'); // or your admin flow
+    setLoading(true);
+
+    try {
+      // Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        newPassword
+      );
+      const user = userCredential.user;
+
+      // Save user role and info to Firestore
+      // This creates a new data in the 'users' collection with the user's UID
+      await setDoc(doc(firestore, 'users', user.uid), {
+        uid: user.uid,
+        username: username,
+        email: email,
+        role: 'Teacher', 
+      });
+
+      // Success! useAuth hook will automatically handle navigation
+      Toast.show({
+        type: 'success',
+        text1: 'Account created successfully!',
+      });
+      
+    } catch (error) {
+      // Handle errors
+      console.log('Signup Error:', error.message);
+      if (error.code === 'auth/email-already-in-use') {
+        Toast.show({ type: 'error', text1: 'Email is already in use.' });
+      } else if (error.code === 'auth/weak-password') {
+        Toast.show({
+          type: 'error',
+          text1: 'Password should be at least 6 characters.',
+        });
+      } else {
+        Toast.show({ type: 'error', text1: 'An error occurred. Try again.' });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -36,7 +91,6 @@ export default function StaffSignUp() {
         />
       </View>
 
-      {/* Form */}
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
@@ -45,7 +99,6 @@ export default function StaffSignUp() {
           value={username}
           onChangeText={setUsername}
         />
-
         <TextInput
           style={styles.input}
           placeholder="Email address"
@@ -55,7 +108,6 @@ export default function StaffSignUp() {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-
         <TextInput
           style={styles.input}
           placeholder="New Password"
@@ -64,7 +116,6 @@ export default function StaffSignUp() {
           value={newPassword}
           onChangeText={setNewPassword}
         />
-
         <TextInput
           style={styles.input}
           placeholder="Confirm Password"
@@ -74,19 +125,25 @@ export default function StaffSignUp() {
           onChangeText={setConfirmPassword}
         />
 
-        {/* Buttons */}
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign-up</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSignup}
+          disabled={loading} 
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Sign-up</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
-               style={styles.buttonAlt}
-                onPress={() => navigation.navigate('AdminSignUp')}
+          style={styles.buttonAlt}
+          onPress={() => navigation.navigate('AdminSignUp')}
         >
-              <Text style={styles.buttonText}>Sign Up as an Administrator</Text>
-            </TouchableOpacity>
+          <Text style={styles.buttonText}>Sign Up as an Administrator</Text>
+        </TouchableOpacity>
 
-        {/* Link to login */}
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
           <Text style={styles.linkText}>Already have an account?</Text>
         </TouchableOpacity>
@@ -95,6 +152,7 @@ export default function StaffSignUp() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

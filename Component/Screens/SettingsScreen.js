@@ -1,14 +1,26 @@
+// Component/Screens/SettingsScreen.js
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
+
+// Import Firebase auth
+import { signOut } from 'firebase/auth';
+import { auth } from '../../config/firebase'; 
 
 export default function SettingsScreen({ navigation }) {
     const handleBack = () => {
         navigation.goBack();
     };
 
-    const handleLogout = () => {
-        // You can also clear any async storage or tokens here if needed
-        navigation.navigate("SignupOrLogin");
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            // The useAuth hook in App.js will detect this and automatically navigate to the AuthStack.
+            Toast.show({ type: 'success', text1: 'Logged out successfully.' });
+        } catch (error) {
+            console.log('Logout Error:', error.message);
+            Toast.show({ type: 'error', text1: 'Failed to log out.' });
+        }
     };
 
     return (
@@ -55,7 +67,6 @@ export default function SettingsScreen({ navigation }) {
                     <Text style={styles.settingText}>Change Password</Text>
                 </TouchableOpacity>
 
-                {/* ✅ Modified Logout Button */}
                 <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
                     <Text style={styles.settingText}>Logout</Text>
                 </TouchableOpacity>
@@ -65,7 +76,6 @@ export default function SettingsScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-            {/* Bottom Navigation */}
             <View style={styles.bottomNav}>
                 <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Dashboard")}>
                     <FontAwesome5 name="home" size={20} color="#fff" />
@@ -84,6 +94,7 @@ export default function SettingsScreen({ navigation }) {
     );
 }
 
+// Styles
 const styles = StyleSheet.create({
     container: {
         flex: 1,

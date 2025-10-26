@@ -1,3 +1,4 @@
+// Component/Screens/ResetPw.js
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -7,32 +8,56 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
+
+// Import Firebase auth
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../../config/firebase'; 
 
 export default function ResetPw() {
-  const [username, setUsername] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState(''); 
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
-  const handleReset = () => {
-    if (!username || !newPassword || !confirmPassword) {
-      Alert.alert('Error', 'Please fill all fields');
+  const handleReset = async () => {
+    if (!email) {
+      Toast.show({ type: 'error', text1: 'Please enter your email address.' });
       return;
     }
-    if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+
+    setLoading(true);
+
+    try {
+      // Send the password reset email
+      await sendPasswordResetEmail(auth, email);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Password reset email sent!',
+        text2: 'Please check your inbox.',
+      });
+      navigation.navigate('Login');
+
+    } catch (error) {
+      console.log('Reset Password Error:', error.message);
+      if (error.code === 'auth/user-not-found') {
+        Toast.show({
+          type: 'error',
+          text1: 'No user found with this email.',
+        });
+      } else {
+        Toast.show({ type: 'error', text1: 'An error occurred.' });
+      }
+    } finally {
+      setLoading(false);
     }
-    // TODO: Add API call for resetting password here
-    Alert.alert('Success', 'Password reset successfully');
-    navigation.navigate('Login');
   };
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -41,40 +66,29 @@ export default function ResetPw() {
         />
       </View>
 
-      {/* Form */}
       <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Username / Email address"
+          placeholder="Email address" 
           placeholderTextColor="#999"
-          value={username}
-          onChangeText={setUsername}
+          value={email}
+          onChangeText={setEmail} 
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="New Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-
-        {/* Reset Button */}
-        <TouchableOpacity style={styles.button} onPress={handleReset}>
-          <Text style={styles.buttonText}>Reset Password</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleReset}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Send Reset Email</Text>
+          )}
         </TouchableOpacity>
 
-        {/* Back to sign-in */}
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
           onPress={() => navigation.navigate('Login')}
@@ -86,6 +100,7 @@ export default function ResetPw() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -94,7 +109,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 80, // same as login screen
+    marginTop: 80, 
   },
   logo: {
     width: 150,
@@ -102,7 +117,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    justifyContent: 'center', // keeps form centered
+    justifyContent: 'center', 
   },
   input: {
     backgroundColor: '#1E1E1E',
@@ -119,7 +134,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryButton: {
-    backgroundColor: '#444', // different color for "back" button
+    backgroundColor: '#444', 
   },
   buttonText: {
     color: '#fff',
