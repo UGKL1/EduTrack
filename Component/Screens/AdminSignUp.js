@@ -15,7 +15,7 @@ import Toast from 'react-native-toast-message';
 // Import Firebase auth and firestore functions
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, firestore } from '../../config/firebase'; 
+import { auth, firestore } from '../../config/firebase';
 
 export default function AdminSignUp() {
   const [username, setUsername] = useState('');
@@ -49,8 +49,8 @@ export default function AdminSignUp() {
       );
       const user = userCredential.user;
 
-      // Save user role and info to Firestore
-      await setDoc(doc(firestore, 'users', user.uid), {
+      // Save user role and info to 'admins' collection
+      await setDoc(doc(firestore, 'admins', user.uid), { // <-- MODIFIED
         uid: user.uid,
         username: username,
         email: email,
@@ -62,7 +62,11 @@ export default function AdminSignUp() {
       Toast.show({
         type: 'success',
         text1: 'Admin account created!',
+        text2: 'Please sign in.',
       });
+
+      // Navigate to Admin login screen
+      navigation.navigate('Admin'); // <-- ADDED
 
     } catch (error) {
       // Handle errors
@@ -81,7 +85,8 @@ export default function AdminSignUp() {
       setLoading(false);
     }
   };
-
+  
+  // ... (rest of the file, styles are unchanged)
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -152,8 +157,7 @@ export default function AdminSignUp() {
     </View>
   );
 }
-
-// Styles
+// ... (styles)
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -8,21 +8,21 @@ import {
   View,
   TouchableOpacity,
   Image,
-  ActivityIndicator, 
+  ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 // Import Firebase auth and firestore functions
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, firestore } from '../../config/firebase'; 
+import { auth, firestore } from '../../config/firebase';
 
 export default function StaffSignUp() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
 
@@ -48,21 +48,24 @@ export default function StaffSignUp() {
       );
       const user = userCredential.user;
 
-      // Save user role and info to Firestore
-      // This creates a new data in the 'users' collection with the user's UID
-      await setDoc(doc(firestore, 'users', user.uid), {
+      // Save user role and info to 'teachers' collection
+      await setDoc(doc(firestore, 'teachers', user.uid), { // <-- MODIFIED
         uid: user.uid,
         username: username,
         email: email,
-        role: 'Teacher', 
+        role: 'Teacher',
       });
 
-      // Success! useAuth hook will automatically handle navigation
+      // Success!
       Toast.show({
         type: 'success',
         text1: 'Account created successfully!',
+        text2: 'Please sign in.',
       });
-      
+
+      // Navigate to Teacher login screen
+      navigation.navigate('Login'); // <-- ADDED
+
     } catch (error) {
       // Handle errors
       console.log('Signup Error:', error.message);
@@ -80,7 +83,8 @@ export default function StaffSignUp() {
       setLoading(false);
     }
   };
-
+  
+  // ... (rest of the file, styles are unchanged)
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -128,7 +132,7 @@ export default function StaffSignUp() {
         <TouchableOpacity
           style={styles.button}
           onPress={handleSignup}
-          disabled={loading} 
+          disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
@@ -151,8 +155,7 @@ export default function StaffSignUp() {
     </View>
   );
 }
-
-// Styles
+// ... (styles)
 const styles = StyleSheet.create({
   container: {
     flex: 1,

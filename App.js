@@ -1,3 +1,4 @@
+// App.js
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Toast from 'react-native-toast-message';
@@ -15,6 +16,7 @@ import Admin from './Component/Screens/Admin';
 import ResetPw from './Component/Screens/ResetPw';
 import StaffSignUp from './Component/Screens/StaffSignUp';
 import AdminSignUp from './Component/Screens/AdminSignUp';
+import AdminDashboard from './Component/Screens/AdminDashboard'; // <-- Import AdminDashboard
 
 // Import auth hook
 import useAuth from './hooks/useAuth';
@@ -38,16 +40,31 @@ function AuthStack() {
   );
 }
 
-// Stack is for users who ARE logged in
-function AppStack() {
+// Stack for TEACHERS who ARE logged in
+function TeacherAppStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Dashboard"
+      initialRouteName="Dashboard" // <-- Teacher starting screen
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen name="Dashboard" component={Dashboard} />
       <Stack.Screen name="AttendanceScreen" component={AttendanceScreen} />
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Stack for ADMINS who ARE logged in
+function AdminAppStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="AdminDashboard" // <-- Admin starting screen
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+      {/* Add other screens admins can access, e.g., Settings */}
+      <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+      {/* You can add more admin-specific screens here */}
     </Stack.Navigator>
   );
 }
@@ -66,26 +83,26 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {/* If Firebase is loading, show the loading screen.
-      */}
       {isAuthLoading ? (
+        // 1. Show loading screen while useAuth is checking
         <LoadingScreen />
-      ) : /* If Firebase is done and 'user' exists, show the main app.
-      */
-      user ? (
-        <AppStack />
+      ) : user ? (
+        // 2. User is logged in, check their role
+        user.role === 'Admin' ? (
+          <AdminAppStack /> // Go to Admin screens
+        ) : (
+          <TeacherAppStack /> // Go to Teacher screens
+        )
       ) : (
-        /* If Firebase is done and 'user' is null, show the login screens.
-      */
+        // 3. No user, show login screens
         <AuthStack />
       )}
-      {/* Adds the Toast message component globally */}
       <Toast />
     </NavigationContainer>
   );
 }
 
-// Styles 
+// Styles
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,

@@ -1,4 +1,4 @@
-// Component/Screens/Dashboard.js
+// Component/Screens/AdminDashboard.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -14,7 +14,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { auth, firestore } from '../../config/firebase'; // Adjust path if needed
 import { doc, getDoc } from 'firebase/firestore';
 
-export default function Dashboard({ navigation }) {
+export default function AdminDashboard({ navigation }) {
   // Add state for user data and loading
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,8 +26,8 @@ export default function Dashboard({ navigation }) {
         // Get the current user's ID from auth
         const userId = auth.currentUser.uid;
 
-        // Fetch the user's data from 'teachers' collection
-        const userDocRef = doc(firestore, 'teachers', userId); // <-- MODIFIED
+        // Fetch the user's data from 'admins' collection
+        const userDocRef = doc(firestore, 'admins', userId); // <-- MODIFIED
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
@@ -57,11 +57,11 @@ export default function Dashboard({ navigation }) {
     );
   }
 
-  // Once loading done, render the dashboard
+  // Once loading done, render the Admindashboard
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
-        <Text style={styles.profileHeader}>Dashboard</Text>
+        <Text style={styles.profileHeader}>AdminDashboard</Text>
         <Image
           source={{ uri: 'https://placehold.co/100x100/A020F0/white?text=User' }}
           style={styles.profileImage}
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingLeft: 5,
   },
-  dashboardHeader: {
+  AdmindashboardHeader: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
