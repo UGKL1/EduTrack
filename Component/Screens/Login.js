@@ -15,7 +15,7 @@ import Toast from 'react-native-toast-message';
 // Import Firebase auth and firestore functions
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, firestore } from '../../config/firebase'; 
+import { auth, firestore } from '../../config/firebase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -42,33 +42,36 @@ export default function Login() {
       );
       const user = userCredential.user;
 
-      // Get user document from Firestore
-      const userDocRef = doc(firestore, 'users', user.uid);
+      // Check if user is in the 'teachers' collection
+      const userDocRef = doc(firestore, 'teachers', user.uid); // <-- MODIFIED
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
+        // Success! User is a Teacher.
+        // The useAuth hook will handle navigation to the Teacher Dashboard.
+        Toast.show({ type: 'success', text1: 'Welcome back!' });
+      } else {
+        // User is not in 'teachers'. Check if they are an 'admin'.
+        const adminDocRef = doc(firestore, 'admins', user.uid);
+        const adminDocSnap = await getDoc(adminDocRef);
 
-        // Check user role
-        if (userData.role === 'Teacher') {
-          // Success! The useAuth hook will handle navigation
-          Toast.show({ type: 'success', text1: 'Welcome back!' });
-        } else {
-          // Wrong role! Sign them out.
+        if (adminDocSnap.exists()) {
+          // This is an admin account
           await signOut(auth);
           Toast.show({
             type: 'error',
             text1: 'Admin Account',
             text2: 'Please use the Admin sign-in screen.',
           });
+        } else {
+          // User exists in auth but not in 'teachers' or 'admins' DB
+          await signOut(auth);
+          Toast.show({
+            type: 'error',
+            text1: 'User data not found.',
+            text2: 'Please contact support.',
+          });
         }
-      } else {
-        // No user data found 
-        await signOut(auth);
-        Toast.show({
-          type: 'error',
-          text1: 'User data not found.',
-        });
       }
     } catch (error) {
       // Handle Auth errors
@@ -86,7 +89,8 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+  
+  // ... (rest of the file, styles are unchanged)
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -160,8 +164,7 @@ export default function Login() {
     </View>
   );
 }
-
-// Styles
+// ... (styles)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -178,7 +181,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    marginTop: 80, 
+    marginTop: 80,
   },
   input: {
     backgroundColor: '#1E1E1E',
@@ -207,7 +210,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonAlt: {
-    backgroundColor: '#0056b3', 
+    backgroundColor: '#0056b3',
     paddingVertical: 12,
     borderRadius: 20,
     marginVertical: 8,
@@ -237,6 +240,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   secondaryButton: {
-  backgroundColor: '#444', 
-},
+    backgroundColor: '#444',
+  },
 });

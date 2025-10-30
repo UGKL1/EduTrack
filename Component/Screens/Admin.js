@@ -42,33 +42,36 @@ export default function Admin() {
       );
       const user = userCredential.user;
 
-      // Get user data from Firestore
-      const userDocRef = doc(firestore, 'users', user.uid);
+      // Check if user is in the 'admins' collection
+      const userDocRef = doc(firestore, 'admins', user.uid); // <-- MODIFIED
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
+        // Success! User is an Admin.
+        // The useAuth hook will handle navigation to the Admin Dashboard.
+        Toast.show({ type: 'success', text1: 'Welcome, Admin!' });
+      } else {
+        // User is not in 'admins'. Check if they are a 'teacher'.
+        const teacherDocRef = doc(firestore, 'teachers', user.uid);
+        const teacherDocSnap = await getDoc(teacherDocRef);
 
-        // Check the role
-        if (userData.role === 'Admin') {
-          // Success! The useAuth hook will handle navigation
-          Toast.show({ type: 'success', text1: 'Welcome, Admin!' });
-        } else {
-          // Wrong role! Sign them out.
+        if (teacherDocSnap.exists()) {
+          // This is a teacher account
           await signOut(auth);
           Toast.show({
             type: 'error',
             text1: 'Teacher Account',
             text2: 'Please use the Staff sign-in screen.',
           });
+        } else {
+          // User exists in auth but not in 'teachers' or 'admins' DB
+          await signOut(auth);
+          Toast.show({
+            type: 'error',
+            text1: 'User data not found.',
+            text2: 'Please contact support.',
+          });
         }
-      } else {
-        // No user data found
-        await signOut(auth);
-        Toast.show({
-          type: 'error',
-          text1: 'User data not found.',
-        });
       }
     } catch (error) {
       // Handle Auth errors
@@ -86,7 +89,8 @@ export default function Admin() {
       setLoading(false);
     }
   };
-
+  
+  // ... (rest of the file, styles are unchanged)
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -119,7 +123,7 @@ export default function Admin() {
         <View style={styles.row}>
           <TouchableOpacity
             style={styles.checkboxContainer}
-            onPress={() => setRememberMe(!rememberMe)}
+            onPPress={() => setRememberMe(!rememberMe)}
           >
             <View style={styles.checkbox}>
               {rememberMe && <Text style={styles.tick}>✓</Text>}
@@ -133,7 +137,7 @@ export default function Admin() {
 
         <TouchableOpacity
           style={styles.buttonAlt}
-          onPress={handleAdminLogin} 
+          onPress={handleAdminLogin}
           disabled={loading}
         >
           {loading ? (
@@ -146,8 +150,7 @@ export default function Admin() {
     </View>
   );
 }
-
-// Styles
+// ... (styles)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -156,15 +159,15 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 80, 
+    marginTop: 80,
   },
   logo: {
-    width: 150,  
-    height: 150, 
+    width: 150,
+    height: 150,
   },
-    formContainer: {
+  formContainer: {
     flex: 1,
-    marginTop: 150,  
+    marginTop: 150,
   },
 
   input: {
