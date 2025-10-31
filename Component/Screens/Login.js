@@ -43,7 +43,7 @@ export default function Login() {
       const user = userCredential.user;
 
       // Check if user is in the 'teachers' collection
-      const userDocRef = doc(firestore, 'teachers', user.uid); // <-- MODIFIED
+      const userDocRef = doc(firestore, 'teachers', user.uid); 
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
@@ -90,7 +90,6 @@ export default function Login() {
     }
   };
   
-  // ... (rest of the file, styles are unchanged)
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -164,7 +163,7 @@ export default function Login() {
     </View>
   );
 }
-// ... (styles)
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

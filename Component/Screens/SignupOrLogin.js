@@ -29,7 +29,7 @@ export default function SignupOrLogin() {
 
        <TouchableOpacity
   style={styles.buttonAlt}
-  onPress={() => navigation.navigate('StaffSignUp')} // ✅ move navigation here
+  onPress={() => navigation.navigate('StaffSignUp')} 
 >
   <Text style={styles.buttonText}>Sign up</Text>
 </TouchableOpacity>
@@ -46,15 +46,15 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 100, // same top spacing for both screens
+    marginTop: 100, 
   },
   logo: {
     width: 200,
-    height: 200, // consistent logo size
+    height: 200,
   },
   buttonContainer: {
     flex: 1,
-    marginTop: 170, // same vertical spacing as login
+    marginTop: 170, 
   },
   input: {
     backgroundColor: '#1E1E1E',

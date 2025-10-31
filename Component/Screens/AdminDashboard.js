@@ -6,12 +6,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  ActivityIndicator, // Added for loading
+  ActivityIndicator, 
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 // Import auth and firestore
-import { auth, firestore } from '../../config/firebase'; // Adjust path if needed
+import { auth, firestore } from '../../config/firebase'; 
 import { doc, getDoc } from 'firebase/firestore';
 
 export default function AdminDashboard({ navigation }) {
@@ -27,7 +27,7 @@ export default function AdminDashboard({ navigation }) {
         const userId = auth.currentUser.uid;
 
         // Fetch the user's data from 'admins' collection
-        const userDocRef = doc(firestore, 'admins', userId); // <-- MODIFIED
+        const userDocRef = doc(firestore, 'admins', userId); 
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
@@ -45,9 +45,8 @@ export default function AdminDashboard({ navigation }) {
     };
 
     fetchUserData();
-  }, []); // The empty array means this runs once on mount
+  }, []); // empty array for runs once on mount
   
-  // ... (rest of the file, styles are unchanged)
   // Show a loading spinner while fetching data
   if (loading) {
     return (
@@ -57,7 +56,7 @@ export default function AdminDashboard({ navigation }) {
     );
   }
 
-  // Once loading done, render the Admindashboard
+  // Once loading done, get admin dashboard
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
@@ -122,7 +121,7 @@ export default function AdminDashboard({ navigation }) {
     </View>
   );
 }
-// ... (styles)
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
