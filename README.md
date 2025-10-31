@@ -76,15 +76,15 @@ npm run dev
 
 **For Teachers:**
 
-* 📸 Take attendance via camera
-* 📋 Review & submit
-* 📈 View reports
+- 📸 Take attendance via camera
+- 📋 Review & submit
+- 📈 View reports
 
 **For Admins:**
 
-* 👥 Manage users & students
-* 📊 Generate analytics
-* 🔍 Monitor activity
+- 👥 Manage users & students
+- 📊 Generate analytics
+- 🔍 Monitor activity
 
 ---
 
@@ -139,11 +139,11 @@ git push origin feature/amazing-feature
 
 ## 👥 Team UGKL_1 – The Open University of Sri Lanka
 
-👨‍💻 K.R.A.R. Jayathilaka – Project Lead / Backend 
+🎓 Supervisor: U.G.K.L. Senarathna
+👨‍💻 K.R.A.R. Jayathilaka – Project Lead / Backend
 🎨 L.G.S.B. Liyanage – Backend / UI-UX
 📱 F.F. Shamra – Frontend / QA & Testing
 🧠 Z.I.K. Nuha – Frontend / QA & Testing
 📋 M.S. Hafsa – Backend / Docs
-🎓 Supervisor: U.G.K.L. Senarathna
 
 ---
