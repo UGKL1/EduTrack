@@ -15,7 +15,7 @@ export default function useAuth() {
         let userProfile = null;
         let userRole = null;
 
-        // 1. Check if they are in the 'admins' collection
+        // Check if they are in the 'admins' collection
         const adminDocRef = doc(firestore, 'admins', user.uid);
         const adminDocSnap = await getDoc(adminDocRef);
 
@@ -23,7 +23,7 @@ export default function useAuth() {
           userProfile = adminDocSnap.data();
           userRole = 'Admin';
         } else {
-          // 2. If not an admin, check if they are in the 'teachers' collection
+          // If not an admin, check if they are in the 'teachers' collection
           const teacherDocRef = doc(firestore, 'teachers', user.uid);
           const teacherDocSnap = await getDoc(teacherDocRef);
 

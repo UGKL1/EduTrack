@@ -6,12 +6,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  ActivityIndicator, // Added for loading
+  ActivityIndicator, 
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 // Import auth and firestore
-import { auth, firestore } from '../../config/firebase'; // Adjust path if needed
+import { auth, firestore } from '../../config/firebase'; 
 import { doc, getDoc } from 'firebase/firestore';
 
 export default function Dashboard({ navigation }) {
@@ -27,7 +27,7 @@ export default function Dashboard({ navigation }) {
         const userId = auth.currentUser.uid;
 
         // Fetch the user's data from 'teachers' collection
-        const userDocRef = doc(firestore, 'teachers', userId); // <-- MODIFIED
+        const userDocRef = doc(firestore, 'teachers', userId); 
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
@@ -47,7 +47,6 @@ export default function Dashboard({ navigation }) {
     fetchUserData();
   }, []); // The empty array means this runs once on mount
   
-  // ... (rest of the file, styles are unchanged)
   // Show a loading spinner while fetching data
   if (loading) {
     return (
@@ -122,7 +121,7 @@ export default function Dashboard({ navigation }) {
     </View>
   );
 }
-// ... (styles)
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

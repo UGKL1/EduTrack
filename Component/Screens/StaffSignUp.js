@@ -84,7 +84,6 @@ export default function StaffSignUp() {
     }
   };
   
-  // ... (rest of the file, styles are unchanged)
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -155,7 +154,8 @@ export default function StaffSignUp() {
     </View>
   );
 }
-// ... (styles)
+
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

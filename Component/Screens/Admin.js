@@ -43,12 +43,12 @@ export default function Admin() {
       const user = userCredential.user;
 
       // Check if user is in the 'admins' collection
-      const userDocRef = doc(firestore, 'admins', user.uid); // <-- MODIFIED
+      const userDocRef = doc(firestore, 'admins', user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
         // Success! User is an Admin.
-        // The useAuth hook will handle navigation to the Admin Dashboard.
+        // useAuth hook will handle navigation to the Admin Dashboard.
         Toast.show({ type: 'success', text1: 'Welcome, Admin!' });
       } else {
         // User is not in 'admins'. Check if they are a 'teacher'.
@@ -90,7 +90,7 @@ export default function Admin() {
     }
   };
   
-  // ... (rest of the file, styles are unchanged)
+  
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -150,7 +150,7 @@ export default function Admin() {
     </View>
   );
 }
-// ... (styles)
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

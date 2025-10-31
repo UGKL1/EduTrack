@@ -41,7 +41,7 @@ export default function AttendanceScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D', // Dark background
+    backgroundColor: '#0D0D0D', 
     paddingHorizontal: 20,
     paddingTop: 50,
   },
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 40,
-    justifyContent: 'center', // Center content horizontally
+    justifyContent: 'center', 
   },
   backButton: {
     position: 'absolute',
@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    flex: 1, // Allows text to take up available space
-    textAlign: 'center', // Centers the text within its flex container
+    flex: 1, 
+    textAlign: 'center', 
   },
   content: {
     flex: 1,

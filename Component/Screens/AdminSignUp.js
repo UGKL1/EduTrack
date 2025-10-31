@@ -50,7 +50,7 @@ export default function AdminSignUp() {
       const user = userCredential.user;
 
       // Save user role and info to 'admins' collection
-      await setDoc(doc(firestore, 'admins', user.uid), { // <-- MODIFIED
+      await setDoc(doc(firestore, 'admins', user.uid), { 
         uid: user.uid,
         username: username,
         email: email,
@@ -66,7 +66,7 @@ export default function AdminSignUp() {
       });
 
       // Navigate to Admin login screen
-      navigation.navigate('Admin'); // <-- ADDED
+      navigation.navigate('Admin'); 
 
     } catch (error) {
       // Handle errors
@@ -86,7 +86,7 @@ export default function AdminSignUp() {
     }
   };
   
-  // ... (rest of the file, styles are unchanged)
+ 
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -157,7 +157,7 @@ export default function AdminSignUp() {
     </View>
   );
 }
-// ... (styles)
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
