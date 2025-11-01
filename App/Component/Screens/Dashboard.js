@@ -79,10 +79,14 @@ export default function Dashboard({ navigation }) {
           <FontAwesome5 name="clipboard-check" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Mark Attendance</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.gridButton}>
-          <FontAwesome5 name="user" size={24} color="#007BFF" />
-          <Text style={styles.gridButtonText}>View Profile</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+  style={styles.gridButton}
+  onPress={() => navigation.navigate('TeacherProfile')}
+>
+  <FontAwesome5 name="user" size={24} color="#007BFF" />
+  <Text style={styles.gridButtonText}>View Profile</Text>
+</TouchableOpacity>
+
         <TouchableOpacity style={styles.gridButton}>
           <FontAwesome5 name="users" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Student's Details</Text>
@@ -95,10 +99,13 @@ export default function Dashboard({ navigation }) {
           <FontAwesome5 name="file-alt" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Reports</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.gridButton}>
-          <FontAwesome5 name="bolt" size={24} color="#007BFF" />
-          <Text style={styles.gridButtonText}>Quick Access</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+  style={styles.gridButton}
+  onPress={() => navigation.navigate('QuickAccess')}
+>
+  <FontAwesome5 name="user" size={24} color="#007BFF" />
+  <Text style={styles.gridButtonText}>Quick Access</Text>
+</TouchableOpacity>
       </View>
 
       <View style={styles.bottomNav}>

@@ -16,10 +16,15 @@ import Admin from './Component/Screens/Admin';
 import ResetPw from './Component/Screens/ResetPw';
 import StaffSignUp from './Component/Screens/StaffSignUp';
 import AdminSignUp from './Component/Screens/AdminSignUp';
-import AdminDashboard from './Component/Screens/AdminDashboard'; // <-- Import AdminDashboard
-
+import AdminDashboard from './Component/Screens/AdminDashboard';
+import TeacherProfile from './Component/Screens/TeacherProfile'; 
+import ManageStudent from './Component/Screens/ManageStudent';
+import ManageTeachers from './Component/Screens/ManageTeachers';// <-- Import AdminDashboard
+import QuickAccess from './Component/Screens/QuickAccess';
 // Import auth hook
 import useAuth from './hooks/useAuth';
+
+
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +41,10 @@ function AuthStack() {
       <Stack.Screen name="StaffSignUp" component={StaffSignUp} />
       <Stack.Screen name="AdminSignUp" component={AdminSignUp} />
       <Stack.Screen name="ResetPw" component={ResetPw} />
+      <Stack.Screen name="TeacherProfile" component={TeacherProfile} />
+      <Stack.Screen name="ManageStudent" component={ManageStudent} />
+      <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
+      <Stack.Screen name="QuickAccess" component={QuickAccess} />
     </Stack.Navigator>
   );
 }
@@ -50,6 +59,8 @@ function TeacherAppStack() {
       <Stack.Screen name="Dashboard" component={Dashboard} />
       <Stack.Screen name="AttendanceScreen" component={AttendanceScreen} />
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+      <Stack.Screen name="TeacherProfile" component={TeacherProfile} />
+      <Stack.Screen name="QuickAccess" component={QuickAccess} />
     </Stack.Navigator>
   );
 }
@@ -64,6 +75,8 @@ function AdminAppStack() {
       <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
       {/* Add other screens admins can access, e.g., Settings */}
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+      <Stack.Screen name="ManageStudent" component={ManageStudent} />
+      <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
       {/* You can add more admin-specific screens here */}
     </Stack.Navigator>
   );
