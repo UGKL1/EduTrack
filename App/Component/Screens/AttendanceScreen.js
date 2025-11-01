@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 
@@ -6,10 +7,12 @@ export default function AttendanceScreen({ navigation }) {
     <View style={styles.container}>
       {/* Header with back button and centered title */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Dashboard')}>
           <FontAwesome5 name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Attendance</Text>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>Attendance</Text>
+        </View>
       </View>
 
       {/* Main content */}
@@ -41,7 +44,7 @@ export default function AttendanceScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D', 
+    backgroundColor: '#0D0D0D',
     paddingHorizontal: 20,
     paddingTop: 50,
   },
@@ -49,18 +52,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 40,
-    justifyContent: 'center', 
+    paddingHorizontal: 10,
   },
   backButton: {
-    position: 'absolute',
-    left: 0,
+    width: 40,
+    alignItems: 'flex-start',
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    flex: 1, 
-    textAlign: 'center', 
   },
   content: {
     flex: 1,
