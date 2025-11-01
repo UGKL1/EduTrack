@@ -106,7 +106,9 @@ export default function AttendanceScreen({ navigation }) {
       const formData = new FormData();
       // pick extension from uri if present
       const uriParts = uri.split(".");
-      const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0]; // strip query/hash
+      const fileType = (uriParts[uriParts.length - 1] || "jpg").split(
+        /\#|\?/
+      )[0]; // strip query/hash
       const filename = `photo.${fileType}`;
 
       formData.append("faceImage", {
@@ -115,17 +117,24 @@ export default function AttendanceScreen({ navigation }) {
         type: `image/${fileType}`,
       });
 
-      const res = await axios.post(`${BACKEND_API_URL}/mark-attendance`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 25000,
-      });
+      const res = await axios.post(
+        `${BACKEND_API_URL}/mark-attendance`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 25000,
+        }
+      );
 
       setScanResult({
         success: true,
         message: res.data?.message ?? "Attendance marked.",
       });
     } catch (err) {
-      console.error("Upload failed:", err?.response?.data ?? err.message ?? err);
+      console.error(
+        "Upload failed:",
+        err?.response?.data ?? err.message ?? err
+      );
       const msg = err?.response?.data?.message ?? "Student not recognized.";
       setScanResult({ success: false, message: msg });
     } finally {
@@ -145,12 +154,15 @@ export default function AttendanceScreen({ navigation }) {
   if (permissionState !== "granted") {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.scanText}>We need permission to use your camera</Text>
+        <Text style={styles.scanText}>
+          We need permission to use your camera
+        </Text>
         <TouchableOpacity
           style={styles.viewButton}
           onPress={async () => {
             try {
-              const { status } = await ImagePicker.requestCameraPermissionsAsync();
+              const { status } =
+                await ImagePicker.requestCameraPermissionsAsync();
               setPermissionState(status);
               if (status === "granted") openCameraAndUpload();
               else
@@ -159,7 +171,10 @@ export default function AttendanceScreen({ navigation }) {
                   "Camera permission was not granted. You can enable it in settings.",
                   [
                     { text: "Cancel", style: "cancel" },
-                    { text: "Open Settings", onPress: () => Linking.openSettings() },
+                    {
+                      text: "Open Settings",
+                      onPress: () => Linking.openSettings(),
+                    },
                   ]
                 );
             } catch (err) {
@@ -178,7 +193,10 @@ export default function AttendanceScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <FontAwesome5 name="arrow-left" size={20} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Attendance</Text>
@@ -189,7 +207,11 @@ export default function AttendanceScreen({ navigation }) {
 
         <View style={styles.scanFrame}>
           {pickedUri ? (
-            <Image source={{ uri: pickedUri }} style={styles.camera} resizeMode="cover" />
+            <Image
+              source={{ uri: pickedUri }}
+              style={styles.camera}
+              resizeMode="cover"
+            />
           ) : (
             <View style={[styles.camera, styles.emptyCamera]}>
               <Text style={{ color: "#fff" }}>No photo yet</Text>
@@ -266,7 +288,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   content: { flex: 1, alignItems: "center" },
-  scanText: { color: "#fff", fontSize: 16, marginBottom: 12, fontWeight: "600" },
+  scanText: {
+    color: "#fff",
+    fontSize: 16,
+    marginBottom: 12,
+    fontWeight: "600",
+  },
   scanFrame: {
     width: 320,
     height: 420,
