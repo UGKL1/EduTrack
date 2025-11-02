@@ -6,12 +6,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  ActivityIndicator, 
+  ActivityIndicator,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 // Import auth and firestore
-import { auth, firestore } from '../../config/firebase'; 
+import { auth, firestore } from '../../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 export default function Dashboard({ navigation }) {
@@ -27,7 +27,7 @@ export default function Dashboard({ navigation }) {
         const userId = auth.currentUser.uid;
 
         // Fetch the user's data from 'teachers' collection
-        const userDocRef = doc(firestore, 'teachers', userId); 
+        const userDocRef = doc(firestore, 'teachers', userId);
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
@@ -46,7 +46,7 @@ export default function Dashboard({ navigation }) {
 
     fetchUserData();
   }, []); // The empty array means this runs once on mount
-  
+
   // Show a loading spinner while fetching data
   if (loading) {
     return (
@@ -62,7 +62,9 @@ export default function Dashboard({ navigation }) {
       <View style={styles.profileCard}>
         <Text style={styles.profileHeader}>Dashboard</Text>
         <Image
-          source={{ uri: 'https://placehold.co/100x100/A020F0/white?text=User' }}
+          source={{
+            uri: 'https://placehold.co/100x100/A020F0/white?text=User',
+          }}
           style={styles.profileImage}
         />
         {/* Replace hardcoded name with user data */}
@@ -80,12 +82,12 @@ export default function Dashboard({ navigation }) {
           <Text style={styles.gridButtonText}>Mark Attendance</Text>
         </TouchableOpacity>
         <TouchableOpacity
-  style={styles.gridButton}
-  onPress={() => navigation.navigate('TeacherProfile')}
->
-  <FontAwesome5 name="user" size={24} color="#007BFF" />
-  <Text style={styles.gridButtonText}>View Profile</Text>
-</TouchableOpacity>
+          style={styles.gridButton}
+          onPress={() => navigation.navigate('TeacherProfile')}
+        >
+          <FontAwesome5 name="user" size={24} color="#007BFF" />
+          <Text style={styles.gridButtonText}>View Profile</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.gridButton}>
           <FontAwesome5 name="users" size={24} color="#007BFF" />
@@ -95,17 +97,22 @@ export default function Dashboard({ navigation }) {
           <FontAwesome5 name="chart-bar" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Class Overview</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.gridButton}>
+
+        <TouchableOpacity
+          style={styles.gridButton}
+          onPress={() => navigation.navigate('AttendanceReports')}
+        >
           <FontAwesome5 name="file-alt" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Reports</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-  style={styles.gridButton}
-  onPress={() => navigation.navigate('QuickAccess')}
->
-  <FontAwesome5 name="user" size={24} color="#007BFF" />
-  <Text style={styles.gridButtonText}>Quick Access</Text>
-</TouchableOpacity>
+          style={styles.gridButton}
+          onPress={() => navigation.navigate('QuickAccess')}
+        >
+          <FontAwesome5 name="user" size={24} color="#007BFF" />
+          <Text style={styles.gridButtonText}>Quick Access</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.bottomNav}>

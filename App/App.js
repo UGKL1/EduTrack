@@ -17,14 +17,13 @@ import ResetPw from './Component/Screens/ResetPw';
 import StaffSignUp from './Component/Screens/StaffSignUp';
 import AdminSignUp from './Component/Screens/AdminSignUp';
 import AdminDashboard from './Component/Screens/AdminDashboard';
-import TeacherProfile from './Component/Screens/TeacherProfile'; 
+import TeacherProfile from './Component/Screens/TeacherProfile';
 import ManageStudent from './Component/Screens/ManageStudent';
-import ManageTeachers from './Component/Screens/ManageTeachers';// <-- Import AdminDashboard
+import ManageTeachers from './Component/Screens/ManageTeachers'; // <-- Import AdminDashboard
 import QuickAccess from './Component/Screens/QuickAccess';
+import AttendanceReports from './Component/Screens/AttendanceReports';
 // Import auth hook
 import useAuth from './hooks/useAuth';
-
-
 
 const Stack = createNativeStackNavigator();
 
@@ -61,6 +60,7 @@ function TeacherAppStack() {
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="TeacherProfile" component={TeacherProfile} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
+      <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
     </Stack.Navigator>
   );
 }
