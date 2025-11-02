@@ -15,6 +15,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
+<<<<<<< Updated upstream:Component/Screens/Dashboard.js
+=======
+
+// Import auth and firestore
+>>>>>>> Stashed changes:App/Component/Screens/Dashboard.js
 import { auth, firestore } from '../../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -33,7 +38,11 @@ export default function Dashboard({ navigation }) {
           return;
         }
 
+<<<<<<< Updated upstream:Component/Screens/Dashboard.js
         const userId = auth.currentUser.uid;
+=======
+        // Fetch the user's data from 'teachers' collection
+>>>>>>> Stashed changes:App/Component/Screens/Dashboard.js
         const userDocRef = doc(firestore, 'teachers', userId);
         const userDocSnap = await getDoc(userDocRef);
 
@@ -50,8 +59,14 @@ export default function Dashboard({ navigation }) {
     };
 
     fetchUserData();
+<<<<<<< Updated upstream:Component/Screens/Dashboard.js
   }, []);
 
+=======
+  }, []); // The empty array means this runs once on mount
+
+  // Show a loading spinner while fetching data
+>>>>>>> Stashed changes:App/Component/Screens/Dashboard.js
   if (loading) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
@@ -67,9 +82,13 @@ export default function Dashboard({ navigation }) {
         <Text style={styles.profileHeader}>Dashboard</Text>
         <Image
           source={{
+<<<<<<< Updated upstream:Component/Screens/Dashboard.js
             uri:
               userData?.profilePic ||
               'https://placehold.co/100x100/A020F0/white?text=User',
+=======
+            uri: 'https://placehold.co/100x100/A020F0/white?text=User',
+>>>>>>> Stashed changes:App/Component/Screens/Dashboard.js
           }}
           style={styles.profileImage}
         />
@@ -86,12 +105,22 @@ export default function Dashboard({ navigation }) {
           <FontAwesome5 name="clipboard-check" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Mark Attendance</Text>
         </TouchableOpacity>
+<<<<<<< Updated upstream:Component/Screens/Dashboard.js
 
         <TouchableOpacity style={styles.gridButton}>
           <FontAwesome5 name="user" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>View Profile</Text>
         </TouchableOpacity>
 
+=======
+        <TouchableOpacity
+          style={styles.gridButton}
+          onPress={() => navigation.navigate('TeacherProfile')}
+        >
+          <FontAwesome5 name="user" size={24} color="#007BFF" />
+          <Text style={styles.gridButtonText}>View Profile</Text>
+        </TouchableOpacity>
+>>>>>>> Stashed changes:App/Component/Screens/Dashboard.js
         <TouchableOpacity style={styles.gridButton}>
           <FontAwesome5 name="users" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Student Details</Text>
@@ -106,12 +135,24 @@ export default function Dashboard({ navigation }) {
           style={styles.gridButton}
           onPress={() => navigation.navigate('AttendanceReports')}
         >
+<<<<<<< Updated upstream:Component/Screens/Dashboard.js
           <FontAwesome5 name="file-alt" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Reports</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.gridButton}>
           <FontAwesome5 name="bolt" size={24} color="#007BFF" />
+=======
+          <FontAwesome5 name="user" size={24} color="#007BFF" />
+          <Text style={styles.gridButtonText}>Reports</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.gridButton}
+          onPress={() => navigation.navigate('QuickAccess')}
+        >
+          <FontAwesome5 name="user" size={24} color="#007BFF" />
+>>>>>>> Stashed changes:App/Component/Screens/Dashboard.js
           <Text style={styles.gridButtonText}>Quick Access</Text>
         </TouchableOpacity>
       </View>
