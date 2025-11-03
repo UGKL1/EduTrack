@@ -1,6 +1,7 @@
 // Component/Screens/Admin.js
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   StyleSheet,
   Text,
@@ -93,6 +94,14 @@ export default function Admin() {
   
   return (
     <View style={styles.container}>
+      {/* Back arrow */}
+        <TouchableOpacity
+          style={styles.backArrow}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+      
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -218,4 +227,11 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
   },
+  backArrow: {
+  position: 'absolute',
+  top: 40,
+  left: 20,
+  zIndex: 10,
+  padding: 10,
+},
 });

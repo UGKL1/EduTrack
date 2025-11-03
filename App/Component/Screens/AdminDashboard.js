@@ -1,194 +1,180 @@
-// Component/Screens/AdminDashboard.js
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator, 
-} from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
+import React from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
-// Import auth and firestore
-import { auth, firestore } from '../../config/firebase'; 
-import { doc, getDoc } from 'firebase/firestore';
+export default function AdminDashboard() {
+  const navigation = useNavigation();
 
-export default function AdminDashboard({ navigation }) {
-  // Add state for user data and loading
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Add hook to fetch data when component loads
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        // Get the current user's ID from auth
-        const userId = auth.currentUser.uid;
-
-        // Fetch the user's data from 'admins' collection
-        const userDocRef = doc(firestore, 'admins', userId); 
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (userDocSnap.exists()) {
-          // Save the user data (username, email, role) to state
-          setUserData(userDocSnap.data());
-        } else {
-          console.log('No user data found in Firestore!');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        // Set loading to false once data is fetched or an error occurs
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, []); // empty array for runs once on mount
-  
-  // Show a loading spinner while fetching data
-  if (loading) {
-    return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#007BFF" />
-      </View>
-    );
-  }
-
-  // Once loading done, get admin dashboard
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}> 
+        <Text style={styles.headerTitle}>Dashboard</Text>
+      </View>
+
+      {/* Profile Section */}
       <View style={styles.profileCard}>
-        <Text style={styles.profileHeader}>AdminDashboard</Text>
         <Image
-          source={{ uri: 'https://placehold.co/100x100/A020F0/white?text=User' }}
+          source={require('../../assets/edulogo.png')}
           style={styles.profileImage}
         />
-        {/* Replace hardcoded name with user data */}
-        <Text style={styles.profileName}>
-          {userData ? userData.username : 'User'}
-        </Text>
+        <Text style={styles.brand}>EDUTRACK</Text>
+        <InfoRow label="Name" value="R.S. Sumangala" />
+        <InfoRow label="Admin ID" value="AD1258" />
+        <InfoRow label="Email Address" value="admin90@gmail.com" />
       </View>
 
-      <View style={styles.gridContainer}>
-        <TouchableOpacity
-          style={styles.gridButton}
-          onPress={() => navigation.navigate('AttendanceScreen')}
-        >
-          <FontAwesome5 name="clipboard-check" size={24} color="#007BFF" />
-          <Text style={styles.gridButtonText}>Mark Attendance</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.gridButton}>
-          <FontAwesome5 name="user" size={24} color="#007BFF" />
-          <Text style={styles.gridButtonText}>View Profile</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.gridButton}>
-          <FontAwesome5 name="users" size={24} color="#007BFF" />
-          <Text style={styles.gridButtonText}>Student's Details</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.gridButton}>
-          <FontAwesome5 name="chart-bar" size={24} color="#007BFF" />
-          <Text style={styles.gridButtonText}>Class Overview</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.gridButton}>
-          <FontAwesome5 name="file-alt" size={24} color="#007BFF" />
-          <Text style={styles.gridButtonText}>Reports</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.gridButton}>
-          <FontAwesome5 name="bolt" size={24} color="#007BFF" />
-          <Text style={styles.gridButtonText}>Quick Access</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Action Buttons */}
+      <View style={styles.buttonGrid}>
+  <View style={styles.row}>
+    <ActionButton
+  label="Manage Student"
+  icon="users"
+  onPress={() => navigation.navigate('ManageStudent')}
+/>
 
+    <ActionButton
+  label="Manage Teacher"
+  icon="users"
+  onPress={() => navigation.navigate('ManageTeachers')}
+/>
+  </View>
+  <View style={styles.centerRow}>
+  <ActionButton label="Reports" icon="file-alt" />
+</View>
+
+</View>
+
+
+      {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton}>
-          <FontAwesome5 name="home" size={20} color="#007BFF" />
-          <Text style={styles.navText}>Dashboard</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <FontAwesome5 name="bell" size={20} color="#fff" />
-          <Text style={styles.navText}>Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => navigation.navigate('SettingsScreen')}
-        >
-          <FontAwesome5 name="cog" size={20} color="#fff" />
-          <Text style={styles.navText}>Settings</Text>
-        </TouchableOpacity>
+        <TabIcon name="home" label="Dashboard" active />
+        <TabIcon name="bell" label="Notifications" />
+        <TabIcon name="cog" label="Settings" onPress={() => navigation.navigate('SettingsScreen')} />
       </View>
     </View>
   );
 }
-// Styles
+
+const InfoRow = ({ label, value }) => (
+  <View style={styles.infoRow}>
+    <Text style={styles.infoText}>{label} : {value}</Text>
+  </View>
+);
+
+const ActionButton = ({ label, icon, full, onPress }) => (
+  <TouchableOpacity
+    style={[styles.actionButton, full ? styles.fullWidthButton : styles.halfWidthButton]}
+    onPress={onPress}
+  >
+    <FontAwesome5 name={icon} size={20} color="#fff" />
+    <Text style={styles.actionLabel}>{label}</Text>
+  </TouchableOpacity>
+);
+
+const TabIcon = ({ name, label, active, onPress }) => (
+  <TouchableOpacity style={styles.navButton} onPress={onPress}>
+    <FontAwesome5 name={name} size={20} color={active ? '#007BFF' : '#ccc'} />
+    <Text style={[styles.navText, { color: active ? '#007BFF' : '#ccc' }]}>{label}</Text>
+  </TouchableOpacity>
+);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0D0D0D',
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
     paddingTop: 40,
+    paddingBottom: 100,
   },
-  loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  topSection: {
-    alignSelf: 'flex-start',
-    marginBottom: 20,
-    paddingLeft: 5,
-  },
-  AdmindashboardHeader: {
-    fontSize: 24,
+
+  // Header
+  header: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 40, // reduce this if needed
+  paddingHorizontal: 10,
+},
+
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
   },
+
+  // Profile Card
   profileCard: {
-    backgroundColor: '#1E1E1E',
-    borderRadius: 15,
-    padding: 20,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  profileHeader: {
-    alignSelf: 'center',
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 10,
-  },
+  backgroundColor: '#1E1E1E',
+  borderRadius: 15,
+  padding: 20,
+  alignItems: 'center',
+  marginBottom: 20,
+  marginTop: 20, // 👈 This pushes it lower
+},
+
   profileImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
+    borderWidth: 2,
+    borderColor: '#007BFF',
+    backgroundColor: '#fff',
     marginBottom: 10,
   },
-  profileName: {
+  brand: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  gridButton: {
-    backgroundColor: '#1E1E1E',
-    width: '48%',
-    borderRadius: 15,
-    paddingVertical: 30,
-    paddingHorizontal: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontWeight: 'bold',
     marginBottom: 15,
   },
-  gridButtonText: {
+  infoRow: {
+    backgroundColor: '#2A2A2A',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 10,
+    width: '100%',
+  },
+  infoText: {
     color: '#fff',
-    marginTop: 10,
+    fontSize: 14,
+  },
+
+  // Action Buttons
+  buttonGrid: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 12,
+  },
+  actionButton: {
+    backgroundColor: '#1E1E1E',
+    borderWidth: 1,
+    borderColor: '#007BFF',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  halfWidthButton: {
+    width: '48%',
+  },
+  fullWidthButton: {
+    width: '100%',
+  },
+  actionLabel: {
+    color: '#fff',
+    marginTop: 8,
+    fontSize: 14,
     textAlign: 'center',
   },
+
+  // Bottom Navigation
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -204,10 +190,21 @@ const styles = StyleSheet.create({
   navButton: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 10,
+    flex: 1,
   },
   navText: {
-    color: '#fff',
-    marginTop: 5,
+    marginTop: 4,
     fontSize: 12,
   },
+  placeholder: {
+  width: '48%',
+},
+centerRow: {
+  width: '100%',
+  alignItems: 'center',
+  marginBottom: 12,
+},
+
+
 });

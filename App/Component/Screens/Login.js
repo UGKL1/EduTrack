@@ -1,6 +1,7 @@
 // Component/Screens/Login.js
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   StyleSheet,
   Text,
@@ -91,7 +92,17 @@ export default function Login() {
   };
   
   return (
+    
     <View style={styles.container}>
+       {/* Back arrow */}
+  <TouchableOpacity
+    style={styles.backArrow}
+    onPress={() => navigation.navigate('SignupOrLogin')}
+  >
+    <Ionicons name="arrow-back" size={24} color="#fff" />
+  </TouchableOpacity>
+
+
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -241,4 +252,13 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: '#444',
   },
+  backArrow: {
+  position: 'absolute',
+  top: 40,
+  left: 20,
+  zIndex: 10,
+  padding: 10,
+},
+
+
 });
