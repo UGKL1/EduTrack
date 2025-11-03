@@ -44,6 +44,7 @@ function AuthStack() {
       <Stack.Screen name="ManageStudent" component={ManageStudent} />
       <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
+      <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
     </Stack.Navigator>
   );
 }
