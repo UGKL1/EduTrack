@@ -22,6 +22,8 @@ import ManageStudent from './Component/Screens/ManageStudent';
 import ManageTeachers from './Component/Screens/ManageTeachers'; // <-- Import AdminDashboard
 import QuickAccess from './Component/Screens/QuickAccess';
 import AttendanceReports from './Component/Screens/AttendanceReports';
+import NotificationsScreen from './Component/Screens/NotificationsScreen';
+
 // Import auth hook
 import useAuth from './hooks/useAuth';
 
@@ -45,6 +47,10 @@ function AuthStack() {
       <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
       <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
+      <Stack.Screen
+        name="NotificationsScreen"
+        component={NotificationsScreen}
+      />
     </Stack.Navigator>
   );
 }
@@ -62,6 +68,10 @@ function TeacherAppStack() {
       <Stack.Screen name="TeacherProfile" component={TeacherProfile} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
       <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
+      <Stack.Screen
+        name="NotificationsScreen"
+        component={NotificationsScreen}
+      />
     </Stack.Navigator>
   );
 }
