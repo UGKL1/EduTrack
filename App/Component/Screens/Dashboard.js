@@ -1,5 +1,5 @@
 // Component/Screens/Dashboard.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-} from "react-native";
-import { FontAwesome5 } from "@expo/vector-icons";
+} from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 // Import auth and firestore
-import { auth, firestore } from "../../config/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { auth, firestore } from '../../config/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function Dashboard({ navigation }) {
   // Add state for user data and loading
@@ -27,17 +27,17 @@ export default function Dashboard({ navigation }) {
         const userId = auth.currentUser.uid;
 
         // Fetch the user's data from 'teachers' collection
-        const userDocRef = doc(firestore, "teachers", userId);
+        const userDocRef = doc(firestore, 'teachers', userId);
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
           // Save the user data (username, email, role) to state
           setUserData(userDocSnap.data());
         } else {
-          console.log("No user data found in Firestore!");
+          console.log('No user data found in Firestore!');
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error('Error fetching user data:', error);
       } finally {
         // Set loading to false once data is fetched or an error occurs
         setLoading(false);
@@ -63,20 +63,20 @@ export default function Dashboard({ navigation }) {
         <Text style={styles.profileHeader}>Dashboard</Text>
         <Image
           source={{
-            uri: "https://placehold.co/100x100/A020F0/white?text=User",
+            uri: 'https://placehold.co/100x100/A020F0/white?text=User',
           }}
           style={styles.profileImage}
         />
         {/* Replace hardcoded name with user data */}
         <Text style={styles.profileName}>
-          {userData ? userData.username : "User"}
+          {userData ? userData.username : 'User'}
         </Text>
       </View>
 
       <View style={styles.gridContainer}>
         <TouchableOpacity
           style={styles.gridButton}
-          onPress={() => navigation.navigate("AttendanceScreen")}
+          onPress={() => navigation.navigate('AttendanceScreen')}
         >
           <FontAwesome5 name="clipboard-check" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Mark Attendance</Text>
@@ -84,7 +84,7 @@ export default function Dashboard({ navigation }) {
 
         <TouchableOpacity
           style={styles.gridButton}
-          onPress={() => navigation.navigate("TeacherProfile")}
+          onPress={() => navigation.navigate('TeacherProfile')}
         >
           <FontAwesome5 name="user" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>View Profile</Text>
@@ -101,7 +101,7 @@ export default function Dashboard({ navigation }) {
 
         <TouchableOpacity
           style={styles.gridButton}
-          onPress={() => navigation.navigate("AttendanceReports")}
+          onPress={() => navigation.navigate('AttendanceReports')}
         >
           <FontAwesome5 name="file-alt" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Reports</Text>
@@ -109,7 +109,7 @@ export default function Dashboard({ navigation }) {
 
         <TouchableOpacity
           style={styles.gridButton}
-          onPress={() => navigation.navigate("QuickAccess")}
+          onPress={() => navigation.navigate('QuickAccess')}
         >
           <FontAwesome5 name="bolt" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Quick Access</Text>
@@ -122,14 +122,17 @@ export default function Dashboard({ navigation }) {
           <Text style={styles.navText}>Dashboard</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navButton}>
-          <FontAwesome5 name="bell" size={20} color="#fff" />
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('NotificationsScreen')}
+        >
+          <FontAwesome5 name="bell" size={20} color="#007BFF" />
           <Text style={styles.navText}>Notifications</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate("SettingsScreen")}
+          onPress={() => navigation.navigate('SettingsScreen')}
         >
           <FontAwesome5 name="cog" size={20} color="#fff" />
           <Text style={styles.navText}>Settings</Text>
@@ -142,36 +145,36 @@ export default function Dashboard({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0D0D0D",
+    backgroundColor: '#0D0D0D',
     paddingHorizontal: 15,
     paddingTop: 40,
   },
   loadingContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   topSection: {
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
     marginBottom: 20,
     paddingLeft: 5,
   },
   dashboardHeader: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: 'bold',
+    color: '#fff',
   },
   profileCard: {
-    backgroundColor: "#1E1E1E",
+    backgroundColor: '#1E1E1E',
     borderRadius: 15,
     padding: 20,
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: 20,
   },
   profileHeader: {
-    alignSelf: "center",
+    alignSelf: 'center',
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 10,
   },
   profileImage: {
@@ -181,49 +184,49 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   profileName: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   gridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     marginBottom: 20,
   },
   gridButton: {
-    backgroundColor: "#1E1E1E",
-    width: "48%",
+    backgroundColor: '#1E1E1E',
+    width: '48%',
     borderRadius: 15,
     paddingVertical: 30,
     paddingHorizontal: 15,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 15,
   },
   gridButtonText: {
-    color: "#fff",
+    color: '#fff',
     marginTop: 10,
-    textAlign: "center",
+    textAlign: 'center',
   },
   bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#1E1E1E",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#1E1E1E',
     paddingVertical: 15,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
   },
   navButton: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   navText: {
-    color: "#fff",
+    color: '#fff',
     marginTop: 5,
     fontSize: 12,
   },
