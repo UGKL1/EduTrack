@@ -9,7 +9,7 @@ export default function AdminDashboard() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}> 
+      <View style={styles.header}>
         <Text style={styles.headerTitle}>Dashboard</Text>
       </View>
 
@@ -27,31 +27,41 @@ export default function AdminDashboard() {
 
       {/* Action Buttons */}
       <View style={styles.buttonGrid}>
-  <View style={styles.row}>
-    <ActionButton
-  label="Manage Student"
-  icon="users"
-  onPress={() => navigation.navigate('ManageStudent')}
-/>
+        <View style={styles.row}>
+          <ActionButton
+            label="Manage Student"
+            icon="users"
+            onPress={() => navigation.navigate('ManageStudent')}
+          />
 
-    <ActionButton
-  label="Manage Teacher"
-  icon="users"
-  onPress={() => navigation.navigate('ManageTeachers')}
-/>
-  </View>
-  <View style={styles.centerRow}>
-  <ActionButton label="Reports" icon="file-alt" />
-</View>
-
-</View>
-
+          <ActionButton
+            label="Manage Teacher"
+            icon="users"
+            onPress={() => navigation.navigate('ManageTeachers')}
+          />
+        </View>
+        <View style={styles.centerRow}>
+          <ActionButton
+            label="Reports"
+            icon="file-alt"
+            onPress={() => navigation.navigate('AdminReport')}
+          />
+        </View>
+      </View>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         <TabIcon name="home" label="Dashboard" active />
-        <TabIcon name="bell" label="Notifications" />
-        <TabIcon name="cog" label="Settings" onPress={() => navigation.navigate('SettingsScreen')} />
+        <TabIcon
+          name="bell"
+          label="Notifications"
+          onPress={() => navigation.navigate('AdminNotificationsScreen')}
+        />
+        <TabIcon
+          name="cog"
+          label="Settings"
+          onPress={() => navigation.navigate('SettingsScreen')}
+        />
       </View>
     </View>
   );
@@ -59,13 +69,18 @@ export default function AdminDashboard() {
 
 const InfoRow = ({ label, value }) => (
   <View style={styles.infoRow}>
-    <Text style={styles.infoText}>{label} : {value}</Text>
+    <Text style={styles.infoText}>
+      {label} : {value}
+    </Text>
   </View>
 );
 
 const ActionButton = ({ label, icon, full, onPress }) => (
   <TouchableOpacity
-    style={[styles.actionButton, full ? styles.fullWidthButton : styles.halfWidthButton]}
+    style={[
+      styles.actionButton,
+      full ? styles.fullWidthButton : styles.halfWidthButton,
+    ]}
     onPress={onPress}
   >
     <FontAwesome5 name={icon} size={20} color="#fff" />
@@ -76,7 +91,9 @@ const ActionButton = ({ label, icon, full, onPress }) => (
 const TabIcon = ({ name, label, active, onPress }) => (
   <TouchableOpacity style={styles.navButton} onPress={onPress}>
     <FontAwesome5 name={name} size={20} color={active ? '#007BFF' : '#ccc'} />
-    <Text style={[styles.navText, { color: active ? '#007BFF' : '#ccc' }]}>{label}</Text>
+    <Text style={[styles.navText, { color: active ? '#007BFF' : '#ccc' }]}>
+      {label}
+    </Text>
   </TouchableOpacity>
 );
 const styles = StyleSheet.create({
@@ -90,11 +107,11 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 40, // reduce this if needed
-  paddingHorizontal: 10,
-},
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 40, // reduce this if needed
+    paddingHorizontal: 10,
+  },
 
   headerTitle: {
     flex: 1,
@@ -106,13 +123,13 @@ const styles = StyleSheet.create({
 
   // Profile Card
   profileCard: {
-  backgroundColor: '#1E1E1E',
-  borderRadius: 15,
-  padding: 20,
-  alignItems: 'center',
-  marginBottom: 20,
-  marginTop: 20, // 👈 This pushes it lower
-},
+    backgroundColor: '#1E1E1E',
+    borderRadius: 15,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 20, // 👈 This pushes it lower
+  },
 
   profileImage: {
     width: 80,
@@ -198,13 +215,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   placeholder: {
-  width: '48%',
-},
-centerRow: {
-  width: '100%',
-  alignItems: 'center',
-  marginBottom: 12,
-},
-
-
+    width: '48%',
+  },
+  centerRow: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
 });

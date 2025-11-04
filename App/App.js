@@ -23,6 +23,8 @@ import ManageTeachers from './Component/Screens/ManageTeachers'; // <-- Import A
 import QuickAccess from './Component/Screens/QuickAccess';
 import AttendanceReports from './Component/Screens/AttendanceReports';
 import NotificationsScreen from './Component/Screens/NotificationsScreen';
+import AdminNotificationsScreen from './Component/Screens/AdminNotificationsScreen';
+import AdminReport from './Component/Screens/AdminReport';
 
 // Import auth hook
 import useAuth from './hooks/useAuth';
@@ -51,6 +53,7 @@ function AuthStack() {
         name="NotificationsScreen"
         component={NotificationsScreen}
       />
+      <Stack.Screen name="AdminReport" component={AdminReport} />
     </Stack.Navigator>
   );
 }
@@ -88,6 +91,12 @@ function AdminAppStack() {
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="ManageStudent" component={ManageStudent} />
       <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
+      <Stack.Screen
+        name="AdminNotificationsScreen"
+        component={AdminNotificationsScreen}
+      />
+      <Stack.Screen name="AdminReport" component={AdminReport} />
+
       {/* You can add more admin-specific screens here */}
     </Stack.Navigator>
   );
