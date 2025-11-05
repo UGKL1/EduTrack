@@ -1,5 +1,5 @@
 // Component/Screens/AttendanceReports.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,14 +15,25 @@ export default function AttendanceReports({ navigation }) {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // DropDownPicker state
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [filterValue, setFilterValue] = useState('Annually');
-  const [filterItems, setFilterItems] = useState([
-    { label: 'Annually', value: 'Annually' },
-    { label: 'Monthly', value: 'Monthly' },
-    { label: 'Weekly', value: 'Weekly' },
-  ]);
+  // Grade Dropdown
+  const [gradeOpen, setGradeOpen] = useState(false);
+  const [gradeValue, setGradeValue] = useState(null);
+  const [gradeItems, setGradeItems] = useState(
+    Array.from({ length: 13 }, (_, i) => ({
+      label: `Grade ${i + 1}`,
+      value: `Grade ${i + 1}`,
+    }))
+  );
+
+  // Class Dropdown
+  const [classOpen, setClassOpen] = useState(false);
+  const [classValue, setClassValue] = useState(null);
+  const [classItems, setClassItems] = useState(
+    ['A', 'B', 'C', 'D'].map((cls) => ({
+      label: `Class ${cls}`,
+      value: `Class ${cls}`,
+    }))
+  );
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -46,19 +57,7 @@ export default function AttendanceReports({ navigation }) {
         <Text style={styles.headerTitle}>Attendance Reports</Text>
       </View>
 
-      {/* Summary Cards */}
-      <View style={styles.summaryContainer}>
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>Present Today</Text>
-          <Text style={styles.cardValue}>28</Text>
-        </View>
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>Absent Today</Text>
-          <Text style={styles.cardValue}>2</Text>
-        </View>
-      </View>
-
-      {/* Date Picker */}
+      {/* DATE PICKER */}
       <TouchableOpacity
         style={styles.dateBox}
         onPress={() => setShowDatePicker(true)}
@@ -77,42 +76,58 @@ export default function AttendanceReports({ navigation }) {
         />
       )}
 
-      {/* Attendance counts */}
+      {/* GRADE DROPDOWN */}
+      <Text style={styles.label}>Select Grade</Text>
+      <DropDownPicker
+        open={gradeOpen}
+        value={gradeValue}
+        items={gradeItems}
+        setOpen={setGradeOpen}
+        setValue={setGradeValue}
+        setItems={setGradeItems}
+        style={styles.dropdown}
+        dropDownContainerStyle={styles.dropdownContainer}
+        textStyle={{ color: '#fff' }}
+        placeholder="Choose grade"
+        placeholderStyle={{ color: '#aaa' }}
+      />
+
+      {/* CLASS DROPDOWN */}
+      <Text style={styles.label}>Select Class</Text>
+      <DropDownPicker
+        open={classOpen}
+        value={classValue}
+        items={classItems}
+        setOpen={setClassOpen}
+        setValue={setClassValue}
+        setItems={setClassItems}
+        style={styles.dropdown}
+        dropDownContainerStyle={styles.dropdownContainer}
+        textStyle={{ color: '#fff' }}
+        placeholder="Choose class"
+        placeholderStyle={{ color: '#aaa' }}
+      />
+
+      {/* PRESENT / ABSENT CARDS */}
       <View style={styles.summaryContainer}>
         <View style={styles.card}>
-          <Text style={styles.cardLabel}>Present</Text>
-          <Text style={styles.cardValue}>22</Text>
+          <Text style={styles.cardLabel}>Present Today</Text>
+          <Text style={styles.cardValue}>28</Text>
         </View>
         <View style={styles.card}>
-          <Text style={styles.cardLabel}>Absent</Text>
-          <Text style={styles.cardValue}>8</Text>
+          <Text style={styles.cardLabel}>Absent Today</Text>
+          <Text style={styles.cardValue}>2</Text>
         </View>
       </View>
 
-      {/* Edit Attendance */}
+      {/* EDIT BUTTON */}
       <TouchableOpacity style={styles.editButton} activeOpacity={0.85}>
         <Text style={styles.editButtonText}>Edit Attendance History</Text>
         <FontAwesome5 name="edit" size={16} color="#fff" />
       </TouchableOpacity>
 
-      {/* Generate Report */}
+      {/* EXPORT SECTION */}
       <Text style={styles.sectionTitle}>Generate Report</Text>
-      <Text style={styles.filterLabel}>Filter Report</Text>
-
-      <DropDownPicker
-        open={filterOpen}
-        value={filterValue}
-        items={filterItems}
-        setOpen={setFilterOpen}
-        setValue={setFilterValue}
-        setItems={setFilterItems}
-        style={styles.dropdown}
-        dropDownContainerStyle={styles.dropdownContainer}
-        textStyle={{ color: '#fff' }}
-        labelStyle={{ color: '#fff' }}
-        placeholder="Select filter"
-      />
-
       <TouchableOpacity style={styles.exportButton} activeOpacity={0.85}>
         <Text style={styles.exportText}>Export Report</Text>
         <FontAwesome5
@@ -123,14 +138,20 @@ export default function AttendanceReports({ navigation }) {
         />
       </TouchableOpacity>
 
-      {/* Bottom Navigation */}
+      {/* BOTTOM NAV */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('Dashboard')}
+        >
           <FontAwesome5 name="home" size={20} color="#fff" />
           <Text style={styles.navText}>Dashboard</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navButton}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('NotificationScreen')}
+        >
           <FontAwesome5 name="bell" size={20} color="#fff" />
           <Text style={styles.navText}>Notifications</Text>
         </TouchableOpacity>
@@ -153,6 +174,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0D0D0D',
     paddingHorizontal: 15,
     paddingTop: 40,
+    paddingBottom: 80,
   },
   header: {
     flexDirection: 'row',
@@ -165,10 +187,41 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 15,
   },
+  label: {
+    color: '#fff',
+    marginTop: 10,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  dateBox: {
+    flexDirection: 'row',
+    backgroundColor: '#1E1E1E',
+    borderRadius: 10,
+    padding: 15,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  dateText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  dropdown: {
+    backgroundColor: '#1E1E1E',
+    borderWidth: 0,
+    borderRadius: 10,
+    marginBottom: 10,
+    zIndex: 10,
+  },
+  dropdownContainer: {
+    backgroundColor: '#1E1E1E',
+    borderWidth: 0,
+    zIndex: 10,
+  },
   summaryContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginVertical: 20,
   },
   card: {
     flex: 1,
@@ -187,19 +240,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 5,
-  },
-  dateBox: {
-    flexDirection: 'row',
-    backgroundColor: '#1E1E1E',
-    borderRadius: 10,
-    padding: 15,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  dateText: {
-    color: '#fff',
-    fontSize: 14,
   },
   editButton: {
     flexDirection: 'row',
@@ -221,23 +261,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 25,
-    marginBottom: 10,
+    marginBottom: 15,
     textAlign: 'center',
-  },
-  filterLabel: {
-    color: '#fff',
-    marginBottom: 10,
-    fontWeight: '500',
-  },
-  dropdown: {
-    backgroundColor: '#1E1E1E',
-    borderWidth: 0,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  dropdownContainer: {
-    backgroundColor: '#1E1E1E',
-    borderWidth: 0,
   },
   exportButton: {
     flexDirection: 'row',
