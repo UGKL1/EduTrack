@@ -19,7 +19,7 @@ import AdminSignUp from './Component/Screens/AdminSignUp';
 import AdminDashboard from './Component/Screens/AdminDashboard';
 import TeacherProfile from './Component/Screens/TeacherProfile';
 import ManageStudent from './Component/Screens/ManageStudent';
-import ManageTeachers from './Component/Screens/ManageTeachers'; // <-- Import AdminDashboard
+import ManageTeachers from './Component/Screens/ManageTeachers'; 
 import QuickAccess from './Component/Screens/QuickAccess';
 import AttendanceReports from './Component/Screens/AttendanceReports';
 import NotificationsScreen from './Component/Screens/NotificationsScreen';
@@ -83,7 +83,7 @@ function TeacherAppStack() {
 function AdminAppStack() {
   return (
     <Stack.Navigator
-      initialRouteName="AdminDashboard" // <-- Admin starting screen
+      initialRouteName="AdminDashboard" 
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
