@@ -1,17 +1,16 @@
-// Component/Screens/AttendanceReports.js
+// Component/Screens/AdminReport.js
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
+  View, Text, StyleSheet, TouchableOpacity, Platform,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 
-export default function AttendanceReports({ navigation }) {
+export default function AdminReport({ navigation }) {
+  const { colors, isDark } = useTheme(); // Use Theme
+
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -48,23 +47,23 @@ export default function AttendanceReports({ navigation }) {
     .padStart(2, '0')}-${date.getFullYear()}`;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <FontAwesome5 name="arrow-left" size={20} color="#fff" />
+          <FontAwesome5 name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Attendance Reports</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Attendance Reports</Text>
       </View>
 
       {/* DATE PICKER */}
       <TouchableOpacity
-        style={styles.dateBox}
+        style={[styles.dateBox, { backgroundColor: colors.card }]}
         onPress={() => setShowDatePicker(true)}
         activeOpacity={0.8}
       >
-        <Text style={styles.dateText}>{formattedDate}</Text>
-        <FontAwesome5 name="calendar" size={18} color="#aaa" />
+        <Text style={[styles.dateText, { color: colors.text }]}>{formattedDate}</Text>
+        <FontAwesome5 name="calendar" size={18} color={colors.subText} />
       </TouchableOpacity>
 
       {showDatePicker && (
@@ -73,11 +72,12 @@ export default function AttendanceReports({ navigation }) {
           mode="date"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={onChangeDate}
+          themeVariant={isDark ? 'dark' : 'light'}
         />
       )}
 
       {/* GRADE DROPDOWN */}
-      <Text style={styles.label}>Select Grade</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Select Grade</Text>
       <DropDownPicker
         open={gradeOpen}
         value={gradeValue}
@@ -85,15 +85,20 @@ export default function AttendanceReports({ navigation }) {
         setOpen={setGradeOpen}
         setValue={setGradeValue}
         setItems={setGradeItems}
-        style={styles.dropdown}
-        dropDownContainerStyle={styles.dropdownContainer}
-        textStyle={{ color: '#fff' }}
+        // Theme Styles for Dropdown
+        style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]}
+        dropDownContainerStyle={[styles.dropdownContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
+        textStyle={{ color: colors.text }}
         placeholder="Choose grade"
-        placeholderStyle={{ color: '#aaa' }}
+        placeholderStyle={{ color: colors.placeholder }}
+        arrowIconStyle={{ tintColor: colors.text }}
+        tickIconStyle={{ tintColor: colors.primary }}
+        zIndex={3000}
+        zIndexInverse={1000}
       />
 
       {/* CLASS DROPDOWN */}
-      <Text style={styles.label}>Select Class</Text>
+      <Text style={[styles.label, { color: colors.text }]}>Select Class</Text>
       <DropDownPicker
         open={classOpen}
         value={classValue}
@@ -101,22 +106,27 @@ export default function AttendanceReports({ navigation }) {
         setOpen={setClassOpen}
         setValue={setClassValue}
         setItems={setClassItems}
-        style={styles.dropdown}
-        dropDownContainerStyle={styles.dropdownContainer}
-        textStyle={{ color: '#fff' }}
+        // Theme Styles for Dropdown
+        style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]}
+        dropDownContainerStyle={[styles.dropdownContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
+        textStyle={{ color: colors.text }}
         placeholder="Choose class"
-        placeholderStyle={{ color: '#aaa' }}
+        placeholderStyle={{ color: colors.placeholder }}
+        arrowIconStyle={{ tintColor: colors.text }}
+        tickIconStyle={{ tintColor: colors.primary }}
+        zIndex={2000}
+        zIndexInverse={2000}
       />
 
       {/* PRESENT / ABSENT CARDS */}
       <View style={styles.summaryContainer}>
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>Present Today</Text>
-          <Text style={styles.cardValue}>28</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardLabel, { color: colors.subText }]}>Present Today</Text>
+          <Text style={[styles.cardValue, { color: colors.text }]}>28</Text>
         </View>
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>Absent Today</Text>
-          <Text style={styles.cardValue}>2</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardLabel, { color: colors.subText }]}>Absent Today</Text>
+          <Text style={[styles.cardValue, { color: colors.text }]}>2</Text>
         </View>
       </View>
 
@@ -127,7 +137,7 @@ export default function AttendanceReports({ navigation }) {
       </TouchableOpacity>
 
       {/* EXPORT SECTION */}
-      <Text style={styles.sectionTitle}>Generate Report</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Generate Report</Text>
       <TouchableOpacity style={styles.exportButton} activeOpacity={0.85}>
         <Text style={styles.exportText}>Export Report</Text>
         <FontAwesome5
@@ -139,29 +149,29 @@ export default function AttendanceReports({ navigation }) {
       </TouchableOpacity>
 
       {/* BOTTOM NAV */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate('Dashboard')}
+          onPress={() => navigation.navigate('AdminDashboard')}
         >
-          <FontAwesome5 name="home" size={20} color="#fff" />
-          <Text style={styles.navText}>Dashboard</Text>
+          <FontAwesome5 name="home" size={20} color={colors.text} />
+          <Text style={[styles.navText, { color: colors.text }]}>Dashboard</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.navButton}
-          onPress={() => navigation.navigate('NotificationScreen')}
+          onPress={() => navigation.navigate('AdminNotificationsScreen')}
         >
-          <FontAwesome5 name="bell" size={20} color="#fff" />
-          <Text style={styles.navText}>Notifications</Text>
+          <FontAwesome5 name="bell" size={20} color={colors.text} />
+          <Text style={[styles.navText, { color: colors.text }]}>Notifications</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.navButton}
           onPress={() => navigation.navigate('SettingsScreen')}
         >
-          <FontAwesome5 name="cog" size={20} color="#fff" />
-          <Text style={styles.navText}>Settings</Text>
+          <FontAwesome5 name="cog" size={20} color={colors.text} />
+          <Text style={[styles.navText, { color: colors.text }]}>Settings</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -171,7 +181,6 @@ export default function AttendanceReports({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
     paddingHorizontal: 15,
     paddingTop: 40,
     paddingBottom: 80,
@@ -182,20 +191,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerTitle: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 15,
   },
   label: {
-    color: '#fff',
     marginTop: 10,
     marginBottom: 8,
     fontWeight: '500',
   },
   dateBox: {
     flexDirection: 'row',
-    backgroundColor: '#1E1E1E',
     borderRadius: 10,
     padding: 15,
     justifyContent: 'space-between',
@@ -203,40 +209,33 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   dateText: {
-    color: '#fff',
     fontSize: 14,
   },
   dropdown: {
-    backgroundColor: '#1E1E1E',
-    borderWidth: 0,
+    borderWidth: 1,
     borderRadius: 10,
     marginBottom: 10,
-    zIndex: 10,
   },
   dropdownContainer: {
-    backgroundColor: '#1E1E1E',
-    borderWidth: 0,
-    zIndex: 10,
+    borderWidth: 1,
   },
   summaryContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 20,
+    zIndex: -1, // Ensure dropdowns float over this
   },
   card: {
     flex: 1,
-    backgroundColor: '#1E1E1E',
     borderRadius: 10,
     paddingVertical: 20,
     alignItems: 'center',
     marginHorizontal: 5,
   },
   cardLabel: {
-    color: '#B0B0B0',
     fontSize: 14,
   },
   cardValue: {
-    color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 5,
@@ -249,6 +248,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     marginTop: 10,
+    zIndex: -1,
   },
   editButtonText: {
     color: '#fff',
@@ -257,12 +257,12 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   sectionTitle: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 25,
     marginBottom: 15,
     textAlign: 'center',
+    zIndex: -1,
   },
   exportButton: {
     flexDirection: 'row',
@@ -271,6 +271,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 14,
+    zIndex: -1,
   },
   exportText: {
     color: '#fff',
@@ -280,7 +281,6 @@ const styles = StyleSheet.create({
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#1E1E1E',
     paddingVertical: 15,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -293,7 +293,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   navText: {
-    color: '#fff',
     fontSize: 12,
     marginTop: 5,
   },

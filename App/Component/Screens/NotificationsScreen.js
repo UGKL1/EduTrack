@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 
 const notifications = [
   {
@@ -38,35 +39,36 @@ const notifications = [
 
 export default function NotificationsScreen() {
   const navigation = useNavigation();
+  const { colors } = useTheme(); // Use Theme
 
   const renderItem = ({ item }) => (
     <View style={styles.notificationItem}>
       <View style={styles.row}>
-        <Ionicons name="notifications-outline" size={20} color="#B0B0B0" />
-        <Text style={styles.message} numberOfLines={2}>
+        <Ionicons name="notifications-outline" size={20} color={colors.subText} />
+        <Text style={[styles.message, { color: colors.text }]} numberOfLines={2}>
           {item.message}
         </Text>
       </View>
-      <Text style={styles.time}>{item.time}</Text>
-      <View style={styles.separator} />
+      <Text style={[styles.time, { color: colors.subText }]}>{item.time}</Text>
+      <View style={[styles.separator, { backgroundColor: colors.border }]} />
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Ionicons
           name="arrow-back"
           size={22}
-          color="#fff"
+          color={colors.text}
           onPress={() => navigation.goBack()}
         />
-        <Text style={styles.headerTitle}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
       </View>
 
       {/* Section title */}
-      <Text style={styles.sectionTitle}>Attendance Alerts</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Attendance Alerts</Text>
 
       {/* Notifications list */}
       <FlatList
@@ -82,7 +84,6 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0E0E0E',
     paddingHorizontal: 20,
     paddingTop: 60,
   },
@@ -92,13 +93,11 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   headerTitle: {
-    color: '#fff',
     fontSize: 20,
     fontWeight: '700',
     marginLeft: 15,
   },
   sectionTitle: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 15,
@@ -111,14 +110,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   message: {
-    color: '#fff',
     fontSize: 14,
     flex: 1,
     marginLeft: 10,
     lineHeight: 20,
   },
   time: {
-    color: '#aaa',
     fontSize: 12,
     textAlign: 'right',
     marginTop: 2,
@@ -126,7 +123,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: '#333',
     marginTop: 5,
   },
 });

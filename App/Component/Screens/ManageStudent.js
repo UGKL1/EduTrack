@@ -2,76 +2,71 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 
 export default function ManageStudent() {
   const navigation = useNavigation();
+  const { colors } = useTheme(); // Use Theme
+
+  const TabIcon = ({ name, label, onPress }) => (
+    <TouchableOpacity style={styles.navButton} onPress={onPress}>
+      <FontAwesome5 name={name} size={20} color={colors.text} />
+      <Text style={[styles.navText, { color: colors.text }]}>{label}</Text>
+    </TouchableOpacity>
+  );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Manage Student</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Manage Student</Text>
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchBar}>
-        <FontAwesome5 name="search" size={16} color="#ccc" style={styles.searchIcon} />
+      <View style={[styles.searchBar, { backgroundColor: colors.card }]}>
+        <FontAwesome5 name="search" size={16} color={colors.placeholder} style={styles.searchIcon} />
         <TextInput
           placeholder="Search Class by Grade"
-          placeholderTextColor="#ccc"
-          style={styles.searchInput}
+          placeholderTextColor={colors.placeholder}
+          style={[styles.searchInput, { color: colors.text }]}
         />
       </View>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
         <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate('AdminDashboard')} />
-        <TabIcon name="bell" label="Notifications" />
+        <TabIcon name="bell" label="Notifications" onPress={() => navigation.navigate('AdminNotificationsScreen')} />
         <TabIcon name="cog" label="Settings" onPress={() => navigation.navigate('SettingsScreen')} />
       </View>
     </View>
   );
 }
 
-const TabIcon = ({ name, label, onPress }) => (
-  <TouchableOpacity style={styles.navButton} onPress={onPress}>
-    <FontAwesome5 name={name} size={20} color="#ccc" />
-    <Text style={styles.navText}>{label}</Text>
-  </TouchableOpacity>
-);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
     paddingTop: 40,
     paddingHorizontal: 20,
     paddingBottom: 80,
   },
-
-  // Header
- header: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 30,
-  marginTop: 30, // 👈 Increase this to push the next element down
-},
-
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+    marginTop: 30,
+  },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
   },
-
-  // Search Bar
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E',
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -83,15 +78,11 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: '#fff',
     fontSize: 14,
   },
-
-  // Bottom Navigation
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#1E1E1E',
     paddingVertical: 15,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -109,6 +100,5 @@ const styles = StyleSheet.create({
   navText: {
     marginTop: 4,
     fontSize: 12,
-    color: '#ccc',
   },
 });

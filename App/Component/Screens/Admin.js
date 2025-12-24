@@ -1,129 +1,76 @@
-// Component/Screens/Admin.js
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
+  StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-
-// Import Firebase auth and firestore functions
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, firestore } from '../../config/firebase';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Admin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const navigation = useNavigation();
+  const { colors } = useTheme();
 
   const handleAdminLogin = async () => {
     if (!email || !password) {
       Toast.show({ type: 'error', text1: 'Email and password are required.' });
       return;
     }
-
     setLoading(true);
-
     try {
-      // Sign in with Auth
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // Check if user is in the 'admins' collection
       const userDocRef = doc(firestore, 'admins', user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
-        // Success! User is an Admin.
-        // useAuth hook will handle navigation to the Admin Dashboard.
         Toast.show({ type: 'success', text1: 'Welcome, Admin!' });
       } else {
-        // User is not in 'admins'. Check if they are a 'teacher'.
-        const teacherDocRef = doc(firestore, 'teachers', user.uid);
-        const teacherDocSnap = await getDoc(teacherDocRef);
-
-        if (teacherDocSnap.exists()) {
-          // This is a teacher account
-          await signOut(auth);
-          Toast.show({
-            type: 'error',
-            text1: 'Teacher Account',
-            text2: 'Please use the Staff sign-in screen.',
-          });
-        } else {
-          // User exists in auth but not in 'teachers' or 'admins' DB
-          await signOut(auth);
-          Toast.show({
-            type: 'error',
-            text1: 'User data not found.',
-            text2: 'Please contact support.',
-          });
-        }
+        await signOut(auth);
+        Toast.show({ type: 'error', text1: 'Access Denied', text2: 'This account is not an admin.' });
       }
     } catch (error) {
-      // Handle Auth errors
       console.log('Admin Login Error:', error.message);
-      if (
-        error.code === 'auth/user-not-found' ||
-        error.code === 'auth/wrong-password' ||
-        error.code === 'auth/invalid-credential'
-      ) {
-        Toast.show({ type: 'error', text1: 'Invalid admin credentials.' });
-      } else {
-        Toast.show({ type: 'error', text1: 'An error occurred.' });
-      }
+      Toast.show({ type: 'error', text1: 'Invalid admin credentials.' });
     } finally {
       setLoading(false);
     }
   };
   
-  
   return (
-    <View style={styles.container}>
-      {/* Back arrow */}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
         <TouchableOpacity
           style={styles.backArrow}
           onPress={() => navigation.navigate('Login')}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
       
       <View style={styles.logoContainer}>
-        <Image
-          source={require('../../assets/edulogo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <Image source={require('../../assets/edulogo.png')} style={styles.logo} resizeMode="contain" />
       </View>
 
       <View style={styles.formContainer}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Admin ID / Email address"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
         />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Password"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -132,12 +79,12 @@ export default function Admin() {
         <View style={styles.row}>
           <TouchableOpacity
             style={styles.checkboxContainer}
-            onPPress={() => setRememberMe(!rememberMe)}
+            onPress={() => setRememberMe(!rememberMe)}
           >
-            <View style={styles.checkbox}>
+            <View style={[styles.checkbox, { borderColor: colors.subText }]}>
               {rememberMe && <Text style={styles.tick}>✓</Text>}
             </View>
-            <Text style={styles.remember}>Remember me</Text>
+            <Text style={[styles.remember, { color: colors.subText }]}>Remember me</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('ResetPw')}>
             <Text style={styles.forgot}>Forgot Password?</Text>
@@ -149,21 +96,16 @@ export default function Admin() {
           onPress={handleAdminLogin}
           disabled={loading}
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Sign-in as an Administrator</Text>
-          )}
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign-in as an Administrator</Text>}
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-// Styles
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
     padding: 20,
   },
   logoContainer: {
@@ -178,12 +120,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 150,
   },
-
   input: {
-    backgroundColor: '#1E1E1E',
     padding: 12,
     borderRadius: 8,
-    color: '#fff',
     marginVertical: 8,
   },
   row: {
@@ -192,7 +131,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   remember: {
-    color: '#ccc',
+    fontSize: 14,
   },
   forgot: {
     color: '#007BFF',
@@ -216,7 +155,6 @@ const styles = StyleSheet.create({
     width: 15,
     height: 15,
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 4,
     marginRight: 8,
     justifyContent: 'center',
@@ -228,10 +166,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   backArrow: {
-  position: 'absolute',
-  top: 40,
-  left: 20,
-  zIndex: 10,
-  padding: 10,
-},
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 10,
+    padding: 10,
+  },
 });

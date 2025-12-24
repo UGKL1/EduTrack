@@ -29,6 +29,9 @@ import AdminReport from './Component/Screens/AdminReport';
 // Import auth hook
 import useAuth from './hooks/useAuth';
 
+// Import context
+import { ThemeProvider } from './context/ThemeContext';
+
 const Stack = createNativeStackNavigator();
 
 // Stack for users who are NOT logged in
@@ -115,23 +118,25 @@ export default function App() {
   const { user, isAuthLoading } = useAuth();
 
   return (
-    <NavigationContainer>
-      {isAuthLoading ? (
-        // 1. Show loading screen while useAuth is checking
-        <LoadingScreen />
-      ) : user ? (
-        // 2. User is logged in, check their role
-        user.role === 'Admin' ? (
-          <AdminAppStack /> // Go to Admin screens
+    <ThemeProvider>
+      <NavigationContainer>
+        {isAuthLoading ? (
+          // 1. Show loading screen while useAuth is checking
+          <LoadingScreen />
+        ) : user ? (
+          // 2. User is logged in, check their role
+          user.role === 'Admin' ? (
+            <AdminAppStack /> // Go to Admin screens
+          ) : (
+            <TeacherAppStack /> // Go to Teacher screens
+          )
         ) : (
-          <TeacherAppStack /> // Go to Teacher screens
-        )
-      ) : (
-        // 3. No user, show login screens
-        <AuthStack />
-      )}
-      <Toast />
-    </NavigationContainer>
+          // 3. No user, show login screens
+          <AuthStack />
+        )}
+        <Toast />
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }
 

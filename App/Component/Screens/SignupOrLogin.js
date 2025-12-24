@@ -1,13 +1,14 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, Image, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function SignupOrLogin() {
   const navigation = useNavigation();
+  const { colors } = useTheme();
 
   return (
-    <View style={styles.container}>
-      {/* Logo */}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -16,7 +17,6 @@ export default function SignupOrLogin() {
         />
       </View>
 
-      {/* Buttons */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.button}
@@ -25,14 +25,14 @@ export default function SignupOrLogin() {
           <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>
 
-        <Text style={styles.subText}>Don’t have an account?</Text>
+        <Text style={[styles.subText, { color: colors.subText }]}>Don’t have an account?</Text>
 
        <TouchableOpacity
-  style={styles.buttonAlt}
-  onPress={() => navigation.navigate('StaffSignUp')} 
->
-  <Text style={styles.buttonText}>Sign up</Text>
-</TouchableOpacity>
+          style={styles.buttonAlt}
+          onPress={() => navigation.navigate('StaffSignUp')} 
+        >
+          <Text style={styles.buttonText}>Sign up</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -41,7 +41,6 @@ export default function SignupOrLogin() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
     padding: 20,
   },
   logoContainer: {
@@ -55,13 +54,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     marginTop: 170, 
-  },
-  input: {
-    backgroundColor: '#1E1E1E',
-    padding: 12,
-    borderRadius: 8,
-    color: '#fff',
-    marginVertical: 8,
   },
   button: {
     backgroundColor: '#007BFF',
@@ -78,19 +70,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: '#fff', // Keep buttons white text for contrast on blue
     fontSize: 16,
     fontWeight: '600',
   },
   subText: {
-    color: '#ccc',
     marginVertical: 5,
     textAlign: 'center',
   },
-  linkText: {
-    color: '#007BFF',
-    textAlign: 'center',
-    marginTop: 10,
-  },
 });
-
