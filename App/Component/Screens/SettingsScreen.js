@@ -129,10 +129,10 @@ export default function SettingsScreen({ navigation }) {
                     <FontAwesome5 name="home" size={20} color={colors.text} />
                     <Text style={[styles.navText, { color: colors.text }]}>Dashboard</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.navButton}>
+                <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('NotificationsScreen')}>
                     <FontAwesome5 name="bell" size={20} color={colors.text} />
                     <Text style={[styles.navText, { color: colors.text }]}>Notifications</Text>
-                </TouchableOpacity>
+                 </TouchableOpacity>
                 <TouchableOpacity style={styles.navButton}>
                     <FontAwesome5 name="cog" size={20} color={colors.primary} />
                     <Text style={[styles.navText, { color: colors.primary }]}>Settings</Text>
