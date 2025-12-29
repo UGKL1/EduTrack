@@ -153,7 +153,7 @@ export default function TeacherProfile() {
 
       <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
         <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate("Dashboard")} />
-        <TabIcon name="notifications" label="Notifications" />
+        <TabIcon name="notifications" label="Notifications" onPress={() => navigation.navigate("NotificationsScreen")}/>
         <TabIcon name="settings" label="Settings" onPress={() => navigation.navigate("SettingsScreen")} />
       </View>
 
