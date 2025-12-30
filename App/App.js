@@ -6,7 +6,7 @@ import Toast from 'react-native-toast-message';
 // Import components for the loading screen
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
-// Import screens
+// Import screens from assets
 import SignupOrLogin from './Component/Screens/SignupOrLogin';
 import Login from './Component/Screens/Login';
 import Dashboard from './Component/Screens/Dashboard';
