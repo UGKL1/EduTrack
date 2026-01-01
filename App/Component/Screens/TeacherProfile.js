@@ -1,79 +1,53 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  Modal,
-  TextInput,
-  Alert,
-  Platform,
+  View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator, Modal, TextInput, Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-
-// Import all Firebase services
-import { firestore, storage } from "../../config/firebase"; // auth is not needed here
+import { firestore, storage } from "../../config/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-// --- IMPORT YOUR HOOK ---
 import useAuth from "../../hooks/useAuth";
-
-// Re-usable InfoRow component
-const InfoRow = ({ label, value }) => (
-  <View style={styles.infoRow}>
-    <Text style={styles.infoTextLabel}>{label}</Text>
-    <Text style={styles.infoTextValue}>{value}</Text>
-  </View>
-);
-
-// Re-usable TabIcon
-const TabIcon = ({ name, label, active, onPress }) => (
-  <TouchableOpacity style={styles.navButton} onPress={onPress}>
-    <Ionicons name={name} size={20} color={active ? "#007BFF" : "#fff"} />
-    <Text style={[styles.navText, active && { color: "#007BFF" }]}>
-      {label}
-    </Text>
-  </TouchableOpacity>
-);
+import { useTheme } from "../../context/ThemeContext";
 
 export default function TeacherProfile() {
   const navigation = useNavigation();
-
-  // --- USE YOUR AUTH HOOK ---
-  // This gets the user data that was already loaded
   const { user, isAuthLoading } = useAuth();
+  const { colors } = useTheme();
 
   const [isUploading, setIsUploading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-
-  // State for the edit modal
   const [editName, setEditName] = useState("");
   const [editContact, setEditContact] = useState("");
   const [editClass, setEditClass] = useState("");
 
-  // --- Pre-fill modal when user data loads ---
   useEffect(() => {
     if (user) {
       setEditName(user.username || "");
       setEditContact(user.contactNo || "");
       setEditClass(user.class || "");
     }
-  }, [user]); // This runs whenever the 'user' object changes
+  }, [user]);
 
-  // Function to pick an image
+  const InfoRow = ({ label, value }) => (
+    <View style={[styles.infoRow, { backgroundColor: colors.card }]}>
+      <Text style={[styles.infoTextLabel, { color: colors.subText }]}>{label}</Text>
+      <Text style={[styles.infoTextValue, { color: colors.text }]}>{value}</Text>
+    </View>
+  );
+
+  const TabIcon = ({ name, label, active, onPress }) => (
+    <TouchableOpacity style={styles.navButton} onPress={onPress}>
+      <Ionicons name={name} size={20} color={active ? colors.primary : colors.text} />
+      <Text style={[styles.navText, { color: active ? colors.primary : colors.text }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+
   const pickImage = async () => {
-    // ... (This function is correct, no changes needed)
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permission needed",
-        "Please grant permission to access your photo library."
-      );
+      Alert.alert("Permission needed", "Please grant permission to access your photo library.");
       return;
     }
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -84,34 +58,22 @@ export default function TeacherProfile() {
     });
     if (!result.cancelled) {
       const uri = result.uri ?? result.assets?.[0]?.uri;
-      if (uri) {
-        uploadImage(uri);
-      }
+      if (uri) uploadImage(uri);
     }
   };
 
-  // Function to upload the image
   const uploadImage = async (uri) => {
-    if (!user) return; // Make sure user is loaded
-
+    if (!user) return;
     setIsUploading(true);
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
-      // Use the user.uid from the hook
       const storageRef = ref(storage, `profileImages/${user.uid}`);
-
       await uploadBytes(storageRef, blob);
       const downloadURL = await getDownloadURL(storageRef);
-
-      // Determine the correct collection based on role
       const collectionName = user.role === "Admin" ? "admins" : "teachers";
       const userDocRef = doc(firestore, collectionName, user.uid);
-
-      await updateDoc(userDocRef, {
-        profileImageUrl: downloadURL,
-      });
-
+      await updateDoc(userDocRef, { profileImageUrl: downloadURL });
       Alert.alert("Success", "Profile picture updated!");
     } catch (error) {
       console.error("Image upload error:", error);
@@ -121,15 +83,11 @@ export default function TeacherProfile() {
     }
   };
 
-  // Function to save the edited text data
   const handleSaveChanges = async () => {
-    if (!user) return; // Make sure user is loaded
-
+    if (!user) return;
     try {
-      // Determine the correct collection based on role
       const collectionName = user.role === "Admin" ? "admins" : "teachers";
       const userDocRef = doc(firestore, collectionName, user.uid);
-
       await updateDoc(userDocRef, {
         username: editName,
         contactNo: editContact,
@@ -143,52 +101,29 @@ export default function TeacherProfile() {
     }
   };
 
-  // Use the loading state from your hook
-  if (isAuthLoading) {
+  if (isAuthLoading || !user) {
     return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
-        <ActivityIndicator size="large" color="#007BFF" />
+      <View style={[styles.container, { justifyContent: "center", backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
-  // If loading is done but user is still null (logged out)
-  if (!user) {
-    return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
-        <Text style={styles.infoTextValue}>
-          User not found. Please log in again.
-        </Text>
-      </View>
-    );
-  }
-
-  // --- Main Render ---
-  // All 'userData' is replaced with 'user'
   return (
-    <View style={styles.container}>
-      {/* --- Header --- */}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.headerRow}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.titleWrapper}>
-          <Text style={styles.title}>View Profile</Text>
+          <Text style={[styles.title, { color: colors.text }]}>View Profile</Text>
         </View>
       </View>
 
-      {/* --- Profile Picture --- */}
       <View style={styles.logoContainer}>
         <TouchableOpacity onPress={pickImage} disabled={isUploading}>
           <Image
-            source={{
-              uri:
-                user.profileImageUrl ||
-                "https://placehold.co/100x100/A020F0/white?text=User",
-            }}
+            source={{ uri: user.profileImageUrl || "https://placehold.co/100x100/A020F0/white?text=User" }}
             style={styles.logo}
             resizeMode="cover"
           />
@@ -203,7 +138,6 @@ export default function TeacherProfile() {
         </TouchableOpacity>
       </View>
 
-      {/* --- Info Container --- */}
       <View style={styles.infoContainer}>
         <InfoRow label="Name" value={user.username || "N/A"} />
         <InfoRow label="Staff ID" value={user.staffId || "N/A"} />
@@ -213,72 +147,47 @@ export default function TeacherProfile() {
         <InfoRow label="Role" value={user.role || "N/A"} />
       </View>
 
-      {/* --- Edit Button --- */}
-      <TouchableOpacity
-        style={styles.editButton}
-        onPress={() => setModalVisible(true)}
-      >
+      <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
         <Text style={styles.editButtonText}>Edit Profile Details</Text>
       </TouchableOpacity>
 
-      {/* --- Bottom Nav --- */}
-      <View style={styles.bottomNav}>
-        <TabIcon
-          name="home"
-          label="Dashboard"
-          onPress={() => navigation.navigate("Dashboard")}
-        />
-        <TabIcon name="notifications" label="Notifications" />
-        <TabIcon
-          name="settings"
-          label="Settings"
-          onPress={() => navigation.navigate("SettingsScreen")}
-        />
+      <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
+        <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate("Dashboard")} />
+        <TabIcon name="notifications" label="Notifications" onPress={() => navigation.navigate("NotificationsScreen")}/>
+        <TabIcon name="settings" label="Settings" onPress={() => navigation.navigate("SettingsScreen")} />
       </View>
 
-      {/* --- Edit Modal --- */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
+      <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Profile</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Profile</Text>
             <TextInput
-              style={styles.modalInput}
+              style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="Full Name"
-              placeholderTextColor="#888"
+              placeholderTextColor={colors.placeholder}
               value={editName}
               onChangeText={setEditName}
             />
             <TextInput
-              style={styles.modalInput}
+              style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="Contact No"
-              placeholderTextColor="#888"
+              placeholderTextColor={colors.placeholder}
               value={editContact}
               onChangeText={setEditContact}
               keyboardType="phone-pad"
             />
             <TextInput
-              style={styles.modalInput}
+              style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="Class (e.g., Grade 7-A)"
-              placeholderTextColor="#888"
+              placeholderTextColor={colors.placeholder}
               value={editClass}
               onChangeText={setEditClass}
             />
             <View style={styles.modalButtonRow}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#555" }]}
-                onPress={() => setModalVisible(false)}
-              >
+              <TouchableOpacity style={[styles.modalButton, { backgroundColor: colors.subText }]} onPress={() => setModalVisible(false)}>
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#007BFF" }]}
-                onPress={handleSaveChanges}
-              >
+              <TouchableOpacity style={[styles.modalButton, { backgroundColor: colors.primary }]} onPress={handleSaveChanges}>
                 <Text style={styles.modalButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
@@ -289,15 +198,12 @@ export default function TeacherProfile() {
   );
 }
 
-// --- Styles ---
-// (All your existing styles are perfect, no changes needed)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0D0D0D",
     paddingHorizontal: 20,
     paddingTop: 60,
-    paddingBottom: 80, // Space for bottom nav
+    paddingBottom: 80,
   },
   headerRow: {
     flexDirection: "row",
@@ -311,12 +217,11 @@ const styles = StyleSheet.create({
   titleWrapper: {
     flex: 1,
     alignItems: "center",
-    marginRight: 40, // Offset back button
+    marginRight: 40,
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
   },
   logoContainer: {
     alignItems: "center",
@@ -349,7 +254,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   infoRow: {
-    backgroundColor: "#1E1E1E",
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 10,
@@ -358,11 +262,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   infoTextLabel: {
-    color: "#ccc",
     fontSize: 14,
   },
   infoTextValue: {
-    color: "#fff",
     fontSize: 14,
     fontWeight: "600",
     flexShrink: 1,
@@ -382,7 +284,6 @@ const styles = StyleSheet.create({
   bottomNav: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#1E1E1E",
     paddingVertical: 15,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -396,11 +297,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   navText: {
-    color: "#fff",
     marginTop: 4,
     fontSize: 12,
   },
-  // Modal Styles
   modalContainer: {
     flex: 1,
     justifyContent: "center",
@@ -409,7 +308,6 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "90%",
-    backgroundColor: "#1E1E1E",
     borderRadius: 15,
     padding: 20,
     alignItems: "center",
@@ -417,13 +315,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
     marginBottom: 20,
   },
   modalInput: {
     width: "100%",
-    backgroundColor: "#333",
-    color: "white",
     padding: 12,
     borderRadius: 10,
     marginBottom: 15,
