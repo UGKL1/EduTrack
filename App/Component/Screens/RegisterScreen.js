@@ -5,9 +5,9 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
+import { API_URL } from '../config/config';
 
-// ⚠️ MAKE SURE THIS IP MATCHES YOUR COMPUTER'S CURRENT IP
-const BACKEND_API_URL = "http://192.168.8.115:3000/api"; 
+const BACKEND_API_URL = API_URL;
 
 export default function RegisterScreen() {
   const [name, setName] = useState("");

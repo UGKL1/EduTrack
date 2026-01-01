@@ -1,25 +1,18 @@
 // AttendanceScreen.safeImagePicker.js
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Platform,
-  Image,
-  Alert,
-  Linking,
-  SafeAreaView,
+  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, Alert, Linking, SafeAreaView,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
+import { useTheme } from '../../context/ThemeContext';
+import { API_URL } from '../config/config';
 
-// --- CHANGE THIS to your backend URL (use device-accessible IP) ---
-const BACKEND_API_URL = "http://192.168.8.115:3000/api"; // <-- replace
+const BACKEND_API_URL = API_URL;
 
 export default function AttendanceScreen({ navigation }) {
+  const { colors } = useTheme(); // Use Theme
   const [permissionState, setPermissionState] = useState(null); // null | "granted" | "denied"
   const [isLoading, setIsLoading] = useState(false);
   const [pickedUri, setPickedUri] = useState(null);
@@ -32,7 +25,6 @@ export default function AttendanceScreen({ navigation }) {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         setPermissionState(status);
         if (status === "granted") {
-          // Auto-launch camera once when screen opens
           await openCameraAndUpload({ autoLaunched: true });
         }
       } catch (err) {
@@ -42,15 +34,12 @@ export default function AttendanceScreen({ navigation }) {
     })();
   }, []);
 
-  // Open device camera using system UI
   const openCameraAndUpload = async ({ autoLaunched = false } = {}) => {
-    // Ensure we have permission (re-check because user may have changed)
     if (permissionState !== "granted") {
       try {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         setPermissionState(status);
         if (status !== "granted") {
-          // If user permanently denied, suggest opening settings
           if (!autoLaunched) {
             Alert.alert(
               "Permission required",
@@ -79,13 +68,8 @@ export default function AttendanceScreen({ navigation }) {
         quality: 0.7,
       });
 
-      // Support both older and newer result shapes
-      // older: { cancelled: true/false, uri }
-      // newer: { assets: [{ uri, ... }] }
-      if (result.cancelled === true) {
-        // user cancelled
-        return;
-      }
+      if (result.cancelled === true) return;
+      
       const uri = result.uri ?? result.assets?.[0]?.uri;
       if (!uri) return;
 
@@ -97,18 +81,14 @@ export default function AttendanceScreen({ navigation }) {
     }
   };
 
-  // Upload image to backend as 'faceImage'
   const uploadImage = async (uri) => {
     setIsLoading(true);
     setScanResult(null);
 
     try {
       const formData = new FormData();
-      // pick extension from uri if present
       const uriParts = uri.split(".");
-      const fileType = (uriParts[uriParts.length - 1] || "jpg").split(
-        /\#|\?/
-      )[0]; // strip query/hash
+      const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0]; 
       const filename = `photo.${fileType}`;
 
       formData.append("faceImage", {
@@ -131,10 +111,7 @@ export default function AttendanceScreen({ navigation }) {
         message: res.data?.message ?? "Attendance marked.",
       });
     } catch (err) {
-      console.error(
-        "Upload failed:",
-        err?.response?.data ?? err.message ?? err
-      );
+      console.error("Upload failed:", err?.response?.data ?? err.message ?? err);
       const msg = err?.response?.data?.message ?? "Student not recognized.";
       setScanResult({ success: false, message: msg });
     } finally {
@@ -142,27 +119,25 @@ export default function AttendanceScreen({ navigation }) {
     }
   };
 
-  // UI states
   if (permissionState === null) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.scanText}>Checking camera permission…</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.scanText, { color: colors.text }]}>Checking camera permission…</Text>
       </SafeAreaView>
     );
   }
 
   if (permissionState !== "granted") {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.scanText}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.scanText, { color: colors.text }]}>
           We need permission to use your camera
         </Text>
         <TouchableOpacity
           style={styles.viewButton}
           onPress={async () => {
             try {
-              const { status } =
-                await ImagePicker.requestCameraPermissionsAsync();
+              const { status } = await ImagePicker.requestCameraPermissionsAsync();
               setPermissionState(status);
               if (status === "granted") openCameraAndUpload();
               else
@@ -171,10 +146,7 @@ export default function AttendanceScreen({ navigation }) {
                   "Camera permission was not granted. You can enable it in settings.",
                   [
                     { text: "Cancel", style: "cancel" },
-                    {
-                      text: "Open Settings",
-                      onPress: () => Linking.openSettings(),
-                    },
+                    { text: "Open Settings", onPress: () => Linking.openSettings() },
                   ]
                 );
             } catch (err) {
@@ -188,24 +160,23 @@ export default function AttendanceScreen({ navigation }) {
     );
   }
 
-  // Main screen
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <FontAwesome5 name="arrow-left" size={20} color="#fff" />
+          <FontAwesome5 name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Attendance</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Attendance</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.scanText}>Tap the button to take a photo</Text>
+        <Text style={[styles.scanText, { color: colors.text }]}>Tap the button to take a photo</Text>
 
-        <View style={styles.scanFrame}>
+        <View style={[styles.scanFrame, { backgroundColor: colors.card }]}>
           {pickedUri ? (
             <Image
               source={{ uri: pickedUri }}
@@ -214,7 +185,7 @@ export default function AttendanceScreen({ navigation }) {
             />
           ) : (
             <View style={[styles.camera, styles.emptyCamera]}>
-              <Text style={{ color: "#fff" }}>No photo yet</Text>
+              <Text style={{ color: colors.subText }}>No photo yet</Text>
             </View>
           )}
 
@@ -250,15 +221,15 @@ export default function AttendanceScreen({ navigation }) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.smallButton, isLoading && { opacity: 0.6 }]}
+            style={[styles.smallButton, { backgroundColor: colors.card }, isLoading && { opacity: 0.6 }]}
             onPress={() => {
               setPickedUri(null);
               setScanResult(null);
             }}
             disabled={isLoading}
           >
-            <FontAwesome5 name="trash" size={18} color="#fff" />
-            <Text style={styles.smallButtonText}>Clear</Text>
+            <FontAwesome5 name="trash" size={18} color={colors.text} />
+            <Text style={[styles.smallButtonText, { color: colors.text }]}>Clear</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -266,11 +237,9 @@ export default function AttendanceScreen({ navigation }) {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0D0D0D",
     paddingHorizontal: 20,
     paddingTop: 20,
   },
@@ -284,12 +253,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#fff",
     textAlign: "center",
   },
   content: { flex: 1, alignItems: "center" },
   scanText: {
-    color: "#fff",
     fontSize: 16,
     marginBottom: 12,
     fontWeight: "600",
@@ -297,7 +264,6 @@ const styles = StyleSheet.create({
   scanFrame: {
     width: 320,
     height: 420,
-    backgroundColor: "#1E1E1E",
     borderRadius: 14,
     borderWidth: 2,
     borderColor: "#007BFF",
@@ -346,13 +312,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,
-    backgroundColor: "#333",
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
     gap: 8,
   },
-  smallButtonText: { color: "#fff", marginLeft: 6 },
+  smallButtonText: { marginLeft: 6 },
   viewButton: {
     backgroundColor: "#007BFF",
     paddingVertical: 12,
