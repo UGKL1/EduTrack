@@ -28,11 +28,5 @@ export const auth = initializeAuth(app, {
 // 3. Exports
 export const firestore = getFirestore(app);
 export const storage = getStorage(app);
-// Analytics (safe in Expo Web only)
-let analytics;
-try {
-  analytics = getAnalytics(app);
-} catch (e) {
-  // Analytics not supported on native
-}
+
 

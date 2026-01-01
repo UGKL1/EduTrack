@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { 
   View, Text, TextInput, TouchableOpacity, Image, Alert, 
-  ActivityIndicator, ScrollView, StyleSheet 
+  ActivityIndicator, ScrollView, StyleSheet, Platform
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-import { API_URL } from '../config/config';
+import { API_URL } from '../../config/config';
 
 const BACKEND_API_URL = API_URL;
 
@@ -38,9 +38,9 @@ export default function RegisterScreen() {
       const type = match ? `image/${match[1]}` : `image/jpeg`;
 
       formData.append("faceImage", { 
-        uri: image, 
-        name: filename, 
-        type: type 
+      uri: Platform.OS === "android" ? image : image.replace("file://", ""),
+      name: filename, 
+      type: type 
       });
 
       console.log("Sending data to:", `${BACKEND_API_URL}/enroll-student`);
