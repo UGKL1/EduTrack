@@ -1,14 +1,11 @@
-// Import the functions from SDK
+// config/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
+// import { getAnalytics } from "firebase/analytics"; // Disabled to stop warnings
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC1KGgDXPQKIBP_3gzgMPX6Qbd5btVCUuM",
   authDomain: "edutrack-cf80a.firebaseapp.com",
@@ -19,9 +16,14 @@ const firebaseConfig = {
   measurementId: "G-RML71QWVGL"
 };
 
-// Initialize Firebase
+// 1. Initialize App
 export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+
+// 2. Initialize Auth (With Memory Fix)
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+});
+
+// 3. Exports
 export const firestore = getFirestore(app);
 export const storage = getStorage(app);
-const analytics = getAnalytics(app);

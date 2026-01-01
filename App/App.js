@@ -22,7 +22,16 @@ import ManageStudent from './Component/Screens/ManageStudent';
 import ManageTeachers from './Component/Screens/ManageTeachers'; // <-- Import AdminDashboard
 import QuickAccess from './Component/Screens/QuickAccess';
 import AttendanceReports from './Component/Screens/AttendanceReports';
+<<<<<<< Updated upstream
 // Import auth hook
+=======
+import NotificationsScreen from './Component/Screens/NotificationsScreen';
+import AdminNotificationsScreen from './Component/Screens/AdminNotificationsScreen';
+import AdminReport from './Component/Screens/AdminReport';
+import RegisterScreen from './Component/Screens/RegisterScreen';
+
+// Import Auth hook
+>>>>>>> Stashed changes
 import useAuth from './hooks/useAuth';
 
 const Stack = createNativeStackNavigator();
@@ -45,6 +54,12 @@ function AuthStack() {
       <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
       <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
+<<<<<<< Updated upstream
+=======
+      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+      <Stack.Screen name="AdminReport" component={AdminReport} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+>>>>>>> Stashed changes
     </Stack.Navigator>
   );
 }
@@ -62,6 +77,12 @@ function TeacherAppStack() {
       <Stack.Screen name="TeacherProfile" component={TeacherProfile} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
       <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
+<<<<<<< Updated upstream
+=======
+      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+      <Stack.Screen name="ResetPw" component={ResetPw} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+>>>>>>> Stashed changes
     </Stack.Navigator>
   );
 }

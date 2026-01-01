@@ -17,7 +17,7 @@ import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 
 // --- CHANGE THIS to your backend URL (use device-accessible IP) ---
-const BACKEND_API_URL = "http://192.168.1.10:3000/api"; // <-- replace
+const BACKEND_API_URL = "http://192.168.8.115:3000/api"; // <-- replace
 
 export default function AttendanceScreen({ navigation }) {
   const [permissionState, setPermissionState] = useState(null); // null | "granted" | "denied"

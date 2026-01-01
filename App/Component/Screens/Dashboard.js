@@ -74,6 +74,7 @@ export default function Dashboard({ navigation }) {
       </View>
 
       <View style={styles.gridContainer}>
+<<<<<<< Updated upstream
         <TouchableOpacity
           style={styles.gridButton}
           onPress={() => navigation.navigate("AttendanceScreen")}
@@ -114,6 +115,25 @@ export default function Dashboard({ navigation }) {
           <FontAwesome5 name="bolt" size={24} color="#007BFF" />
           <Text style={styles.gridButtonText}>Quick Access</Text>
         </TouchableOpacity>
+=======
+        {[
+          { icon: 'clipboard-check', label: 'Mark Attendance', nav: 'AttendanceScreen' },
+          { icon: 'user', label: 'View Profile', nav: 'TeacherProfile' },
+          { icon: 'users', label: "Student's Details", nav: 'RegisterScreen' }, // Add nav when ready
+          { icon: 'chart-bar', label: 'Class Overview', nav: '' },
+          { icon: 'file-alt', label: 'Reports', nav: 'AttendanceReports' },
+          { icon: 'bolt', label: 'Quick Access', nav: 'QuickAccess' },
+        ].map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.gridButton, { backgroundColor: colors.card }]}
+            onPress={() => item.nav && navigation.navigate(item.nav)}
+          >
+            <FontAwesome5 name={item.icon} size={24} color={colors.primary} />
+            <Text style={[styles.gridButtonText, { color: colors.text }]}>{item.label}</Text>
+          </TouchableOpacity>
+        ))}
+>>>>>>> Stashed changes
       </View>
 
       <View style={styles.bottomNav}>
