@@ -2,27 +2,43 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 
 export default function QuickAccess() {
   const navigation = useNavigation();
+  const { colors } = useTheme(); // Use Theme
+
+  const ActionButton = ({ label, icon, onPress }) => (
+    <TouchableOpacity style={styles.actionButton} onPress={onPress}>
+      <Text style={styles.buttonText}>{label}</Text>
+      <FontAwesome5 name={icon} size={16} color="#fff" style={styles.buttonIcon} />
+    </TouchableOpacity>
+  );
+
+  const TabIcon = ({ name, label, onPress }) => (
+    <TouchableOpacity style={styles.navButton} onPress={onPress}>
+      <FontAwesome5 name={name} size={20} color={colors.text} />
+      <Text style={[styles.navText, { color: colors.text }]}>{label}</Text>
+    </TouchableOpacity>
+  );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Quick Access</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Quick Access</Text>
       </View>
 
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/edulogo.png')} // Replace with your logo path
+          source={require('../../assets/edulogo.png')} 
           style={styles.logo}
         />
-        <Text style={styles.brand}>EDUTRACK</Text>
+        <Text style={[styles.brand, { color: colors.text }]}>EDUTRACK</Text>
       </View>
 
       {/* Action Buttons */}
@@ -35,38 +51,22 @@ export default function QuickAccess() {
       </View>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
         <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate('Dashboard')} />
-        <TabIcon name="bell" label="Notifications" />
+        <TabIcon name="bell" label="Notifications" onPress={() => navigation.navigate('NotificationsScreen')} />
         <TabIcon name="cog" label="Settings" onPress={() => navigation.navigate('SettingsScreen')} />
       </View>
     </View>
   );
 }
 
-const ActionButton = ({ label, icon, onPress }) => (
-  <TouchableOpacity style={styles.actionButton} onPress={onPress}>
-    <Text style={styles.buttonText}>{label}</Text>
-    <FontAwesome5 name={icon} size={16} color="#fff" style={styles.buttonIcon} />
-  </TouchableOpacity>
-);
-
-const TabIcon = ({ name, label, onPress }) => (
-  <TouchableOpacity style={styles.navButton} onPress={onPress}>
-    <FontAwesome5 name={name} size={20} color="#ccc" />
-    <Text style={styles.navText}>{label}</Text>
-  </TouchableOpacity>
-);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
     paddingTop: 40,
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
-
-  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -77,10 +77,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
   },
-
-  // Logo
   logoContainer: {
     alignItems: 'center',
     marginBottom: 30,
@@ -92,12 +89,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   brand: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-
-  // Buttons
   buttonGroup: {
     gap: 12,
   },
@@ -118,12 +112,9 @@ const styles = StyleSheet.create({
   buttonIcon: {
     marginLeft: 10,
   },
-
-  // Bottom Navigation
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#1E1E1E',
     paddingVertical: 15,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -141,6 +132,5 @@ const styles = StyleSheet.create({
   navText: {
     marginTop: 4,
     fontSize: 12,
-    color: '#ccc',
   },
 });

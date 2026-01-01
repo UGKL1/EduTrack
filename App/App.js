@@ -6,7 +6,7 @@ import Toast from 'react-native-toast-message';
 // Import components for the loading screen
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
-// Import screens
+// Import screens from assets
 import SignupOrLogin from './Component/Screens/SignupOrLogin';
 import Login from './Component/Screens/Login';
 import Dashboard from './Component/Screens/Dashboard';
@@ -19,24 +19,25 @@ import AdminSignUp from './Component/Screens/AdminSignUp';
 import AdminDashboard from './Component/Screens/AdminDashboard';
 import TeacherProfile from './Component/Screens/TeacherProfile';
 import ManageStudent from './Component/Screens/ManageStudent';
-import ManageTeachers from './Component/Screens/ManageTeachers'; // <-- Import AdminDashboard
+import ManageTeachers from './Component/Screens/ManageTeachers';
 import QuickAccess from './Component/Screens/QuickAccess';
 import AttendanceReports from './Component/Screens/AttendanceReports';
-<<<<<<< Updated upstream
-// Import auth hook
-=======
+
+
 import NotificationsScreen from './Component/Screens/NotificationsScreen';
 import AdminNotificationsScreen from './Component/Screens/AdminNotificationsScreen';
 import AdminReport from './Component/Screens/AdminReport';
 import RegisterScreen from './Component/Screens/RegisterScreen';
 
 // Import Auth hook
->>>>>>> Stashed changes
 import useAuth from './hooks/useAuth';
+
+// Import Theme context
+import { ThemeProvider } from './context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
 
-// Stack for users who are NOT logged in
+// Auth Stack (Not Logged In)
 function AuthStack() {
   return (
     <Stack.Navigator
@@ -54,21 +55,21 @@ function AuthStack() {
       <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
       <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
-<<<<<<< Updated upstream
-=======
+
       <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
       <Stack.Screen name="AdminReport" component={AdminReport} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
->>>>>>> Stashed changes
+
+
     </Stack.Navigator>
   );
 }
 
-// Stack for TEACHERS who ARE logged in
+// Teacher stack (Logged in)
 function TeacherAppStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Dashboard" // <-- Teacher starting screen
+      initialRouteName="Dashboard"
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen name="Dashboard" component={Dashboard} />
@@ -77,34 +78,36 @@ function TeacherAppStack() {
       <Stack.Screen name="TeacherProfile" component={TeacherProfile} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
       <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
-<<<<<<< Updated upstream
-=======
       <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
       <Stack.Screen name="ResetPw" component={ResetPw} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
->>>>>>> Stashed changes
+
+      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+      <Stack.Screen name="ResetPw" component={ResetPw} />
+
     </Stack.Navigator>
   );
 }
 
-// Stack for ADMINS who ARE logged in
+//Admin stack (Logged in)
 function AdminAppStack() {
   return (
     <Stack.Navigator
-      initialRouteName="AdminDashboard" // <-- Admin starting screen
+      initialRouteName="AdminDashboard"
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
-      {/* Add other screens admins can access, e.g., Settings */}
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="ManageStudent" component={ManageStudent} />
       <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
-      {/* You can add more admin-specific screens here */}
+      <Stack.Screen name="AdminNotificationsScreen" component={AdminNotificationsScreen}/>
+      <Stack.Screen name="AdminReport" component={AdminReport} />
+      <Stack.Screen name="ResetPw" component={ResetPw} />
     </Stack.Navigator>
   );
 }
 
-// Loading component
+// Loading Screen Component
 function LoadingScreen() {
   return (
     <View style={styles.loadingContainer}>
@@ -113,27 +116,27 @@ function LoadingScreen() {
   );
 }
 
+// App root component
 export default function App() {
   const { user, isAuthLoading } = useAuth();
 
   return (
-    <NavigationContainer>
-      {isAuthLoading ? (
-        // 1. Show loading screen while useAuth is checking
-        <LoadingScreen />
-      ) : user ? (
-        // 2. User is logged in, check their role
-        user.role === 'Admin' ? (
-          <AdminAppStack /> // Go to Admin screens
+    <ThemeProvider>
+      <NavigationContainer>
+        {isAuthLoading ? (
+          <LoadingScreen />
+        ) : user ? (
+          user.role === 'Admin' ? (
+            <AdminAppStack />
+          ) : (
+            <TeacherAppStack />
+          )
         ) : (
-          <TeacherAppStack /> // Go to Teacher screens
-        )
-      ) : (
-        // 3. No user, show login screens
-        <AuthStack />
-      )}
-      <Toast />
-    </NavigationContainer>
+          <AuthStack />
+        )}
+        <Toast />
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }
 

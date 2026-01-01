@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, Alert, Linking, SafeAreaView,
+  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, Alert, Linking, SafeAreaView,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -12,7 +13,7 @@ import { API_URL } from '../config/config';
 const BACKEND_API_URL = API_URL;
 
 export default function AttendanceScreen({ navigation }) {
-  const { colors } = useTheme(); // Use Theme
+  const { colors } = useTheme(); // Use Theme// Use Theme
   const [permissionState, setPermissionState] = useState(null); // null | "granted" | "denied"
   const [isLoading, setIsLoading] = useState(false);
   const [pickedUri, setPickedUri] = useState(null);
@@ -88,6 +89,7 @@ export default function AttendanceScreen({ navigation }) {
     try {
       const formData = new FormData();
       const uriParts = uri.split(".");
+
       const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0]; 
       const filename = `photo.${fileType}`;
 
@@ -111,6 +113,7 @@ export default function AttendanceScreen({ navigation }) {
         message: res.data?.message ?? "Attendance marked.",
       });
     } catch (err) {
+
       console.error("Upload failed:", err?.response?.data ?? err.message ?? err);
       const msg = err?.response?.data?.message ?? "Student not recognized.";
       setScanResult({ success: false, message: msg });

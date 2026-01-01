@@ -1,26 +1,19 @@
 // Component/Screens/ResetPw.js
 import React, { useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  TouchableOpacity,
-  Image,
-  Alert,
-  ActivityIndicator,
+  StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-
-// Import Firebase auth
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../config/firebase'; 
+import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 
 export default function ResetPw() {
   const [email, setEmail] = useState(''); 
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const { colors } = useTheme(); // Use Theme
 
   const handleReset = async () => {
     if (!email) {
@@ -57,7 +50,7 @@ export default function ResetPw() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -68,9 +61,9 @@ export default function ResetPw() {
 
       <View style={styles.formContainer}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Email address" 
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={email}
           onChangeText={setEmail} 
           autoCapitalize="none"
@@ -104,7 +97,6 @@ export default function ResetPw() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
     padding: 20,
   },
   logoContainer: {
@@ -120,10 +112,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
   },
   input: {
-    backgroundColor: '#1E1E1E',
     padding: 12,
     borderRadius: 8,
-    color: '#fff',
     marginVertical: 8,
   },
   button: {

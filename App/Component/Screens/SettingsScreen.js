@@ -1,5 +1,6 @@
 // Component/Screens/SettingsScreen.js
-import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 
@@ -7,7 +8,13 @@ import Toast from 'react-native-toast-message';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase'; 
 
+// Import Theme Hook
+import { useTheme } from '../../context/ThemeContext';
+
 export default function SettingsScreen({ navigation }) {
+    // Access the theme context
+    const { colors, themePreference, updateTheme } = useTheme();
+
     const handleBack = () => {
         navigation.goBack();
     };
@@ -15,7 +22,6 @@ export default function SettingsScreen({ navigation }) {
     const handleLogout = async () => {
         try {
             await signOut(auth);
-            // The useAuth hook in App.js will detect this and automatically navigate to the AuthStack.
             Toast.show({ type: 'success', text1: 'Logged out successfully.' });
         } catch (error) {
             console.log('Logout Error:', error.message);
@@ -23,71 +29,113 @@ export default function SettingsScreen({ navigation }) {
         }
     };
 
+    // Helper component for Radio Button Options
+    const RadioOption = ({ label, value }) => (
+        <TouchableOpacity 
+            style={[styles.settingItem, { borderBottomColor: colors.border }]} 
+            onPress={() => updateTheme(value)}
+        >
+            <Text style={[styles.settingText, { color: colors.text }]}>{label}</Text>
+            <View style={[styles.radioCircle, { borderColor: colors.text }]}>
+                {themePreference === value && (
+                    <View style={[styles.selectedRb, { backgroundColor: colors.primary }]} />
+                )}
+            </View>
+        </TouchableOpacity>
+    );
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                    <FontAwesome5 name="arrow-left" size={20} color="#fff" />
+                    <FontAwesome5 name="arrow-left" size={20} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Settings</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionHeader}>Notifications</Text>
-                <View style={[styles.settingItem, { alignItems: 'flex-start' }]}>
-                    <View>
-                        <Text style={styles.settingText}>Absence Notification</Text>
-                        <Text style={styles.subtitleText}>Notify parents/guardians of absences</Text>
-                    </View>
-                    <Switch />
+            {/* Scrollable Content */}
+            <ScrollView 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                {/* Appearance Section */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionHeader, { color: colors.text }]}>Appearance</Text>
+                    <RadioOption label="System Default" value="system" />
+                    <RadioOption label="Light Mode" value="light" />
+                    <RadioOption label="Dark Mode" value="dark" />
                 </View>
-            </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionHeader}>Help & Support</Text>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>User Guide</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Contact Support</Text>
-                </TouchableOpacity>
-            </View>
+                {/* Notifications Section */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionHeader, { color: colors.text }]}>Notifications</Text>
+                    <View style={[styles.settingItem, { alignItems: 'flex-start', borderBottomColor: colors.border }]}>
+                        <View>
+                            <Text style={[styles.settingText, { color: colors.text }]}>Absence Notification</Text>
+                            <Text style={[styles.subtitleText, { color: colors.subText }]}>Notify parents/guardians of absences</Text>
+                        </View>
+                        <Switch />
+                    </View>
+                </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionHeader}>About</Text>
-                <Text style={styles.settingText}>Version 1.1.1</Text>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Terms & Privacy</Text>
-                </TouchableOpacity>
-            </View>
+                {/* Help & Support Section */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionHeader, { color: colors.text }]}>Help & Support</Text>
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>User Guide</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>Contact Support</Text>
+                    </TouchableOpacity>
+                </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionHeader}>Accounts</Text>
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={styles.settingText}>Change Password</Text>
-                </TouchableOpacity>
+                {/* About Section */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionHeader, { color: colors.text }]}>About</Text>
+                    <View style={[styles.settingItem, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>Version 1.1.1</Text>
+                    </View>
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>Terms & Privacy</Text>
+                    </TouchableOpacity>
+                </View>
 
-                <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
-                    <Text style={styles.settingText}>Logout</Text>
-                </TouchableOpacity>
+                {/* Accounts Section */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionHeader, { color: colors.text }]}>Accounts</Text>
+                    
+                    {/* FIXED: Navigate to ResetPw screen */}
+                    <TouchableOpacity 
+                        style={[styles.settingItem, { borderBottomColor: colors.border }]}
+                        onPress={() => navigation.navigate('ResetPw')}
+                    >
+                        <Text style={[styles.settingText, { color: colors.text }]}>Change Password</Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity style={styles.settingItem}>
-                    <Text style={[styles.settingText, { color: 'red' }]}>Remove Account</Text>
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]} onPress={handleLogout}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>Logout</Text>
+                    </TouchableOpacity>
 
-            <View style={styles.bottomNav}>
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: 'transparent' }]}>
+                        <Text style={[styles.settingText, { color: 'red' }]}>Remove Account</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+
+            {/* Bottom Nav */}
+            <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
                 <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Dashboard")}>
-                    <FontAwesome5 name="home" size={20} color="#fff" />
-                    <Text style={styles.navText}>Dashboard</Text>
+                    <FontAwesome5 name="home" size={20} color={colors.text} />
+                    <Text style={[styles.navText, { color: colors.text }]}>Dashboard</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('NotificationsScreen')}>
+                    <FontAwesome5 name="bell" size={20} color={colors.text} />
+                    <Text style={[styles.navText, { color: colors.text }]}>Notifications</Text>
+                 </TouchableOpacity>
                 <TouchableOpacity style={styles.navButton}>
-                    <FontAwesome5 name="bell" size={20} color="#fff" />
-                    <Text style={styles.navText}>Notifications</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navButton}>
-                    <FontAwesome5 name="cog" size={20} color="#007BFF" />
-                    <Text style={styles.navText}>Settings</Text>
+                    <FontAwesome5 name="cog" size={20} color={colors.primary} />
+                    <Text style={[styles.navText, { color: colors.primary }]}>Settings</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -98,33 +146,39 @@ export default function SettingsScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0D0D0D',
-        padding: 20,
+        // Background color handled dynamically
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 20,
+        paddingVertical: 15,
+        marginTop: 40, // Top margin for safe area
+        paddingHorizontal: 20,
     },
     backButton: {
         position: 'absolute',
-        left: 0,
+        left: 20,
         padding: 10,
     },
     headerTitle: {
-        color: '#fff',
+        // Color handled dynamically
         fontSize: 22,
         fontWeight: 'bold',
+    },
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 100, // Extra padding so content isn't hidden behind bottom nav
     },
     section: {
         marginBottom: 20,
     },
     sectionHeader: {
-        color: '#fff',
+        // Color handled dynamically
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
+        marginTop: 10,
     },
     settingItem: {
         flexDirection: 'row',
@@ -132,21 +186,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 15,
         borderBottomWidth: 1,
-        borderBottomColor: '#1E1E1E',
+        // Border color handled dynamically
     },
     settingText: {
-        color: '#fff',
+        // Color handled dynamically
         fontSize: 16,
     },
     subtitleText: {
-        color: '#ccc',
+        // Color handled dynamically
         fontSize: 12,
         marginTop: 4,
     },
     bottomNav: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor: '#1E1E1E',
+        // Background color handled dynamically
         paddingVertical: 15,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -160,8 +214,23 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     navText: {
-        color: '#fff',
+        // Color handled dynamically
         marginTop: 5,
         fontSize: 12,
+    },
+    // Radio Button Styles
+    radioCircle: {
+        height: 20,
+        width: 20,
+        borderRadius: 10,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    selectedRb: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        // Background color handled dynamically
     },
 });
