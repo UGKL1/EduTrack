@@ -2,17 +2,18 @@
 import React, { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, Alert, Linking, SafeAreaView,
+  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, Alert, Linking, SafeAreaView,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
+import { useTheme } from '../../context/ThemeContext';
+import { API_URL } from '../config/config';
 
-// --- CHANGE THIS to your backend URL (use device-accessible IP) ---
-const BACKEND_API_URL = "http://192.168.8.115:3000/api"; // <-- replace
+const BACKEND_API_URL = API_URL;
 
 export default function AttendanceScreen({ navigation }) {
-  const { colors } = useTheme(); // Use Theme
+  const { colors } = useTheme(); // Use Theme// Use Theme
   const [permissionState, setPermissionState] = useState(null); // null | "granted" | "denied"
   const [isLoading, setIsLoading] = useState(false);
   const [pickedUri, setPickedUri] = useState(null);
@@ -88,6 +89,7 @@ export default function AttendanceScreen({ navigation }) {
     try {
       const formData = new FormData();
       const uriParts = uri.split(".");
+
       const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0]; 
       const filename = `photo.${fileType}`;
 
@@ -111,6 +113,7 @@ export default function AttendanceScreen({ navigation }) {
         message: res.data?.message ?? "Attendance marked.",
       });
     } catch (err) {
+
       console.error("Upload failed:", err?.response?.data ?? err.message ?? err);
       const msg = err?.response?.data?.message ?? "Student not recognized.";
       setScanResult({ success: false, message: msg });

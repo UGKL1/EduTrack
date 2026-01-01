@@ -24,3 +24,6 @@ package-lock.json
 App/package-lock.json
 
 serviceAccountKey.json
+App/package-lock.json
+App/package-lock.json
+*.json
