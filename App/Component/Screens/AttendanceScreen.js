@@ -9,7 +9,7 @@ import axios from "axios";
 import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 
 // --- CHANGE THIS to your backend URL (use device-accessible IP) ---
-const BACKEND_API_URL = "http://192.168.1.10:3000/api"; // <-- replace
+const BACKEND_API_URL = "http://192.168.8.115:3000/api"; // <-- replace
 
 export default function AttendanceScreen({ navigation }) {
   const { colors } = useTheme(); // Use Theme

@@ -1,11 +1,12 @@
-// Import the functions from SDKs
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { getAnalytics } from 'firebase/analytics';
+// config/firebase.js
+import { initializeApp } from "firebase/app";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 // Firebase configuration (from environment variables)
+
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,12 +17,17 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
+// 1. Initialize App
 export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+
+// 2. Initialize Auth (With Memory Fix)
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+});
+
+// 3. Exports
 export const firestore = getFirestore(app);
 export const storage = getStorage(app);
-
 // Analytics (safe in Expo Web only)
 let analytics;
 try {
@@ -29,3 +35,4 @@ try {
 } catch (e) {
   // Analytics not supported on native
 }
+

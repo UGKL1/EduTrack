@@ -22,9 +22,12 @@ import ManageStudent from './Component/Screens/ManageStudent';
 import ManageTeachers from './Component/Screens/ManageTeachers';
 import QuickAccess from './Component/Screens/QuickAccess';
 import AttendanceReports from './Component/Screens/AttendanceReports';
+
+
 import NotificationsScreen from './Component/Screens/NotificationsScreen';
 import AdminNotificationsScreen from './Component/Screens/AdminNotificationsScreen';
 import AdminReport from './Component/Screens/AdminReport';
+import RegisterScreen from './Component/Screens/RegisterScreen';
 
 // Import Auth hook
 import useAuth from './hooks/useAuth';
@@ -52,8 +55,12 @@ function AuthStack() {
       <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
       <Stack.Screen name="QuickAccess" component={QuickAccess} />
       <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
+
       <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
       <Stack.Screen name="AdminReport" component={AdminReport} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+
+
     </Stack.Navigator>
   );
 }
@@ -73,6 +80,11 @@ function TeacherAppStack() {
       <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
       <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
       <Stack.Screen name="ResetPw" component={ResetPw} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+
+      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+      <Stack.Screen name="ResetPw" component={ResetPw} />
+
     </Stack.Navigator>
   );
 }

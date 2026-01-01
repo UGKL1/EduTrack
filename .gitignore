@@ -21,3 +21,6 @@ yarn-error.log*
 .expo
 
 package-lock.json
+App/package-lock.json
+
+serviceAccountKey.json
