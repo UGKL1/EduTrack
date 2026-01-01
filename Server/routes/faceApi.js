@@ -6,11 +6,32 @@ const path = require("path");
 const fs = require("fs");
 const admin = require("firebase-admin");
 
-// --- 1. SETUP FIREBASE ---
-const serviceAccount = require("../serviceAccountKey.json");
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// --- 1. SETUP FIREBASE ADMIN ---
+// We use a try-catch block to debug the key file specifically
+try {
+  const serviceAccountPath = path.join(__dirname, "../serviceAccountKey.json");
+  
+  if (!fs.existsSync(serviceAccountPath)) {
+    throw new Error(`File not found at: ${serviceAccountPath}`);
+  }
+
+  const serviceAccount = require(serviceAccountPath);
+
+  // Initialize Firebase (only if not already running)
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log(`✅ Firebase Connected: ${serviceAccount.project_id}`);
+  }
+
+} catch (error) {
+  console.error("❌ FIREBASE ERROR: Could not load serviceAccountKey.json");
+  console.error("   Reason:", error.message);
+  console.error("   -> Did you download a NEW key and put it in the Server folder?");
+  process.exit(1); // Stop server so you can fix it
+}
+
 const db = admin.firestore();
 
 // --- 2. SETUP FACE API ENV ---
@@ -22,7 +43,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // --- 3. CREATE NETWORKS MANUALLY ---
-// We create them here to ensure they exist forever
+// Create the neural networks
 const ssdNet = new faceapi.SsdMobilenetv1();
 const landmarkNet = new faceapi.FaceLandmark68Net();
 const recognitionNet = new faceapi.FaceRecognitionNet();
@@ -35,12 +56,12 @@ async function loadModels() {
   console.log("📂 Loading models from:", modelPath);
 
   try {
-    // Load weights directly into our specific variables
+    // Load weights directly into memory
     await ssdNet.loadFromDisk(modelPath);
     await landmarkNet.loadFromDisk(modelPath);
     await recognitionNet.loadFromDisk(modelPath);
 
-    // Verify they are loaded
+    // Verify loading
     if (!landmarkNet.params) {
         throw new Error("LandmarkNet failed to load weights.");
     }
@@ -64,21 +85,18 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
 
     const img = await canvas.loadImage(req.file.buffer);
     
-    // --- DIRECT DETECTION (Bypasses Helper) ---
-    // 1. Find the face box
+    // 1. Detect Face
     const detections = await ssdNet.locateFaces(img);
     if (!detections || detections.length === 0) {
         return res.status(400).json({ message: "No face detected." });
     }
-    const face = detections[0]; // Take the first face
+    const face = detections[0];
 
-    // 2. Find the landmarks (Eyes/Nose)
+    // 2. Landmarks & Descriptor
     const landmarks = await landmarkNet.detectLandmarks(img, face);
-
-    // 3. Calculate Descriptor (Face ID)
     const descriptor = await recognitionNet.computeFaceDescriptor(img, landmarks);
 
-    // Save to Firestore
+    // 3. Save to Firestore
     await db.collection("students").doc(studentId).set({
       studentName: studentName,
       studentId: studentId,
@@ -91,7 +109,7 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
 
   } catch (error) {
     console.error("Enrollment Error:", error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: "Server Error: " + error.message });
   }
 });
 
@@ -104,17 +122,18 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
 
     const img = await canvas.loadImage(req.file.buffer);
     
-    // --- DIRECT DETECTION ---
+    // 1. Detect Face
     const detections = await ssdNet.locateFaces(img);
     if (!detections || detections.length === 0) {
         return res.status(400).json({ message: "No face detected." });
     }
-    const face = detections[0]; 
+    const face = detections[0];
 
+    // 2. Landmarks & Descriptor
     const landmarks = await landmarkNet.detectLandmarks(img, face);
     const descriptor = await recognitionNet.computeFaceDescriptor(img, landmarks);
 
-    // DB Matching
+    // 3. Match against Database
     const studentsSnapshot = await db.collection("students").get();
     if (studentsSnapshot.empty) return res.status(404).json({ message: "No students found." });
 
@@ -128,6 +147,7 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
 
     if (bestMatch.label === "unknown") return res.status(401).json({ message: "Face not recognized." });
 
+    // 4. Record Attendance
     await db.collection("attendance").add({
       studentName: bestMatch.label,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),

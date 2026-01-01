@@ -2,13 +2,12 @@
 import React, { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, Alert, Linking, SafeAreaView,
-  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, Alert, Linking, SafeAreaView,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useTheme } from '../../context/ThemeContext';
-import { API_URL } from '../config/config';
+import { API_URL } from '../../config/config';
 
 const BACKEND_API_URL = API_URL;
 
