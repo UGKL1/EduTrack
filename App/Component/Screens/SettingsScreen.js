@@ -11,9 +11,22 @@ import { auth } from '../../config/firebase';
 // Import Theme Hook
 import { useTheme } from '../../context/ThemeContext';
 
+// ✅ ADDED: Auth hook to detect Admin / Teacher
+import useAuth from '../../hooks/useAuth';
+
 export default function SettingsScreen({ navigation }) {
     // Access the theme context
     const { colors, themePreference, updateTheme } = useTheme();
+
+    // ✅ ADDED: Get logged-in user and role
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'Admin';
+
+    // ✅ Role-based route names (NO hardcoding anymore)
+    const dashboardRoute = isAdmin ? 'AdminDashboard' : 'Dashboard';
+    const notificationRoute = isAdmin
+        ? 'AdminNotificationsScreen'
+        : 'NotificationsScreen';
 
     const handleBack = () => {
         navigation.goBack();
@@ -73,7 +86,9 @@ export default function SettingsScreen({ navigation }) {
                     <View style={[styles.settingItem, { alignItems: 'flex-start', borderBottomColor: colors.border }]}>
                         <View>
                             <Text style={[styles.settingText, { color: colors.text }]}>Absence Notification</Text>
-                            <Text style={[styles.subtitleText, { color: colors.subText }]}>Notify parents/guardians of absences</Text>
+                            <Text style={[styles.subtitleText, { color: colors.subText }]}>
+                                Notify parents/guardians of absences
+                            </Text>
                         </View>
                         <Switch />
                     </View>
@@ -105,7 +120,7 @@ export default function SettingsScreen({ navigation }) {
                 <View style={styles.section}>
                     <Text style={[styles.sectionHeader, { color: colors.text }]}>Accounts</Text>
                     
-                    {/* FIXED: Navigate to ResetPw screen */}
+                    {/* Navigate to ResetPw screen */}
                     <TouchableOpacity 
                         style={[styles.settingItem, { borderBottomColor: colors.border }]}
                         onPress={() => navigation.navigate('ResetPw')}
@@ -113,7 +128,10 @@ export default function SettingsScreen({ navigation }) {
                         <Text style={[styles.settingText, { color: colors.text }]}>Change Password</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]} onPress={handleLogout}>
+                    <TouchableOpacity 
+                        style={[styles.settingItem, { borderBottomColor: colors.border }]} 
+                        onPress={handleLogout}
+                    >
                         <Text style={[styles.settingText, { color: colors.text }]}>Logout</Text>
                     </TouchableOpacity>
 
@@ -123,16 +141,24 @@ export default function SettingsScreen({ navigation }) {
                 </View>
             </ScrollView>
 
-            {/* Bottom Nav */}
+            {/* Bottom Navigation (FIXED FOR ADMIN + TEACHER) */}
             <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
-                <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Dashboard")}>
+                <TouchableOpacity 
+                    style={styles.navButton} 
+                    onPress={() => navigation.navigate(dashboardRoute)}
+                >
                     <FontAwesome5 name="home" size={20} color={colors.text} />
                     <Text style={[styles.navText, { color: colors.text }]}>Dashboard</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('NotificationsScreen')}>
+
+                <TouchableOpacity 
+                    style={styles.navButton} 
+                    onPress={() => navigation.navigate(notificationRoute)}
+                >
                     <FontAwesome5 name="bell" size={20} color={colors.text} />
                     <Text style={[styles.navText, { color: colors.text }]}>Notifications</Text>
-                 </TouchableOpacity>
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.navButton}>
                     <FontAwesome5 name="cog" size={20} color={colors.primary} />
                     <Text style={[styles.navText, { color: colors.primary }]}>Settings</Text>
@@ -142,18 +168,15 @@ export default function SettingsScreen({ navigation }) {
     );
 }
 
-// Styles
+// Styles (UNCHANGED)
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        // Background color handled dynamically
-    },
+    container: { flex: 1 },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 15,
-        marginTop: 40, // Top margin for safe area
+        marginTop: 40,
         paddingHorizontal: 20,
     },
     backButton: {
@@ -162,19 +185,15 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     headerTitle: {
-        // Color handled dynamically
         fontSize: 22,
         fontWeight: 'bold',
     },
     scrollContent: {
         paddingHorizontal: 20,
-        paddingBottom: 100, // Extra padding so content isn't hidden behind bottom nav
+        paddingBottom: 100,
     },
-    section: {
-        marginBottom: 20,
-    },
+    section: { marginBottom: 20 },
     sectionHeader: {
-        // Color handled dynamically
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
@@ -186,21 +205,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 15,
         borderBottomWidth: 1,
-        // Border color handled dynamically
     },
-    settingText: {
-        // Color handled dynamically
-        fontSize: 16,
-    },
-    subtitleText: {
-        // Color handled dynamically
-        fontSize: 12,
-        marginTop: 4,
-    },
+    settingText: { fontSize: 16 },
+    subtitleText: { fontSize: 12, marginTop: 4 },
     bottomNav: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        // Background color handled dynamically
         paddingVertical: 15,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -209,16 +219,8 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
     },
-    navButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    navText: {
-        // Color handled dynamically
-        marginTop: 5,
-        fontSize: 12,
-    },
-    // Radio Button Styles
+    navButton: { alignItems: 'center', justifyContent: 'center' },
+    navText: { marginTop: 5, fontSize: 12 },
     radioCircle: {
         height: 20,
         width: 20,
@@ -231,6 +233,5 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 5,
-        // Background color handled dynamically
     },
 });
