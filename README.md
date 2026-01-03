@@ -102,6 +102,8 @@ EduTrack/
 │       └── (face-api model files)
 ├── package.json
 └── README.md
+```
+---
 
 ## ⚡ Quick Start
 
