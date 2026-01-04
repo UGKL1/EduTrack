@@ -1,10 +1,11 @@
-# 📘 EduTrack  
+# 📘 EduTrack
+
 ### Smart Attendance Management System using Facial Recognition
 
 EduTrack is a **mobile-based smart attendance management system** designed for educational institutions. It leverages **facial recognition technology** to automate student attendance, reduce manual errors, prevent proxy attendance, and generate real-time attendance reports for teachers and administrators.
 
-🎓 Developed as an academic project 
-🏫 Institution: *The Open University of Sri Lanka*
+🎓 Developed as an academic project
+🏫 Institution: _The Open University of Sri Lanka_
 
 ---
 
@@ -15,7 +16,7 @@ EduTrack is a **mobile-based smart attendance management system** designed for e
 ✅ Real-time reports & summaries  
 ✅ Firebase-powered authentication & storage  
 ✅ Modern UI with Light / Dark / System themes  
-✅ Integrated Node.js backend for AI processing  
+✅ Integrated Node.js backend for AI processing
 
 ---
 
@@ -24,11 +25,13 @@ EduTrack is a **mobile-based smart attendance management system** designed for e
 EduTrack consists of **two tightly integrated components**:
 
 ### 📱 Frontend (Mobile Application)
+
 - Built using **React Native (Expo)**
 - Used by teachers and administrators
 - Handles UI, authentication, camera access, and navigation
 
 ### 🧪 Backend (Facial Recognition API)
+
 - Built using **Node.js + Express**
 - Uses **face-api.js** for facial recognition
 - Processes images sent from the mobile app
@@ -39,6 +42,7 @@ EduTrack consists of **two tightly integrated components**:
 ## 🛠 Technology Stack
 
 ### 📱 Frontend
+
 - React Native (Expo)
 - React Navigation (Stack Navigation)
 - Firebase Authentication
@@ -48,6 +52,7 @@ EduTrack consists of **two tightly integrated components**:
 - AsyncStorage (theme persistence)
 
 ### 🧠 Backend
+
 - Node.js
 - Express.js
 - face-api.js
@@ -94,7 +99,7 @@ EduTrack/
 │   │
 │   └── hooks/
 │       └── useAuth.js
-│   
+│
 ├──Server/
 │   ├── routes/
 │   │   └── faceApi.js
@@ -103,6 +108,7 @@ EduTrack/
 ├── package.json
 └── README.md
 ```
+
 ---
 
 ## ⚡ Quick Start
@@ -144,6 +150,7 @@ Create `config.json` in server directory:
 //Change this to your computer's IP address!
 export const API_URL = "http://192.000.0.0/api";
 ```
+
 get private service account key from firebase console and put that as `serviceAccountKey.json` in Server directory:
 
 ### 3. Start Development Servers
@@ -176,3 +183,5 @@ node index.js
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
