@@ -94,32 +94,9 @@ export default function SettingsScreen({ navigation }) {
                     </View>
                 </View>
 
-                {/* Help & Support Section */}
-                <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: colors.text }]}>Help & Support</Text>
-                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
-                        <Text style={[styles.settingText, { color: colors.text }]}>User Guide</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
-                        <Text style={[styles.settingText, { color: colors.text }]}>Contact Support</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* About Section */}
-                <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: colors.text }]}>About</Text>
-                    <View style={[styles.settingItem, { borderBottomColor: colors.border }]}>
-                        <Text style={[styles.settingText, { color: colors.text }]}>Version 1.1.1</Text>
-                    </View>
-                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
-                        <Text style={[styles.settingText, { color: colors.text }]}>Terms & Privacy</Text>
-                    </TouchableOpacity>
-                </View>
-
                 {/* Accounts Section */}
                 <View style={styles.section}>
-                    <Text style={[styles.sectionHeader, { color: colors.text }]}>Accounts</Text>
-                    
+                    <Text style={[styles.sectionHeader, { color: colors.text }]}>Accounts</Text> 
                     {/* Navigate to ResetPw screen */}
                     <TouchableOpacity 
                         style={[styles.settingItem, { borderBottomColor: colors.border }]}
@@ -139,6 +116,29 @@ export default function SettingsScreen({ navigation }) {
                         <Text style={[styles.settingText, { color: 'red' }]}>Remove Account</Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Help & Support Section */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionHeader, { color: colors.text }]}>Help & Support</Text>
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>User Guide</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>Contact Support</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* About Section */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionHeader, { color: colors.text }]}>About</Text>
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>Terms & Privacy</Text>
+                    </TouchableOpacity>
+                    <View style={[styles.settingItem, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.settingText, { color: colors.text }]}>Version 1.1.1</Text>
+                    </View>
+                </View>
+         
             </ScrollView>
 
             {/* Bottom Navigation (FIXED FOR ADMIN + TEACHER) */}
