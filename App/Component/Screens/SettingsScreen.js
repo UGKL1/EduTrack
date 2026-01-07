@@ -97,7 +97,7 @@ export default function SettingsScreen({ navigation }) {
                 {/* Accounts Section */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionHeader, { color: colors.text }]}>Accounts</Text> 
-                    {/* Navigate to ResetPw screen */}
+                    {/* Navigate to the ResetPw screen */}
                     <TouchableOpacity 
                         style={[styles.settingItem, { borderBottomColor: colors.border }]}
                         onPress={() => navigation.navigate('ResetPw')}
