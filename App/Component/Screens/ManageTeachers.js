@@ -301,12 +301,29 @@ export default function ManageTeachers() {
         </View>
       </Modal>
 
-      {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
-        <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate('AdminDashboard')} />
-        <TabIcon name="bell" label="Notifications" onPress={() => navigation.navigate('AdminNotificationsScreen')} />
-        <TabIcon name="cog" label="Settings" onPress={() => navigation.navigate('SettingsScreen')} />
-      </View>
+      {/* Bottom Navigation (FIXED FOR ADMIN + TEACHER) */}
+                  <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
+                      <TouchableOpacity 
+                          style={styles.navButton} 
+                          onPress={() => navigation.navigate(dashboardRoute)}
+                      >
+                          <FontAwesome5 name="home" size={20} color={colors.text} />
+                          <Text style={[styles.navText, { color: colors.text }]}>Dashboard</Text>
+                      </TouchableOpacity>
+      
+                      <TouchableOpacity 
+                          style={styles.navButton} 
+                          onPress={() => navigation.navigate(notificationRoute)}
+                      >
+                          <FontAwesome5 name="bell" size={20} color={colors.text} />
+                          <Text style={[styles.navText, { color: colors.text }]}>Notifications</Text>
+                      </TouchableOpacity>
+      
+                      <TouchableOpacity style={styles.navButton}>
+                          <FontAwesome5 name="cog" size={20} color={colors.primary} />
+                          <Text style={[styles.navText, { color: colors.primary }]}>Settings</Text>
+                      </TouchableOpacity>
+                  </View>
     </View>
   );
 }
