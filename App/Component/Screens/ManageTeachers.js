@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
   View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, 
-  ActivityIndicator, Modal, Alert
+  ActivityIndicator, Modal, Alert 
 } from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext'; 
 
 // Firebase Imports
-import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'; // Added deleteDoc
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'; 
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { firestore, auth } from '../../config/firebase';
 
@@ -197,13 +197,6 @@ export default function ManageTeachers() {
     </View>
   );
 
-  const TabIcon = ({ name, label, onPress }) => (
-    <TouchableOpacity style={styles.navButton} onPress={onPress}>
-      <FontAwesome5 name={name} size={20} color={colors.text} />
-      <Text style={[styles.navText, { color: colors.text }]}>{label}</Text>
-    </TouchableOpacity>
-  );
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -301,29 +294,30 @@ export default function ManageTeachers() {
         </View>
       </Modal>
 
-      {/* Bottom Navigation (FIXED FOR ADMIN + TEACHER) */}
-                  <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
-                      <TouchableOpacity 
-                          style={styles.navButton} 
-                          onPress={() => navigation.navigate(dashboardRoute)}
-                      >
-                          <FontAwesome5 name="home" size={20} color={colors.text} />
-                          <Text style={[styles.navText, { color: colors.text }]}>Dashboard</Text>
-                      </TouchableOpacity>
-      
-                      <TouchableOpacity 
-                          style={styles.navButton} 
-                          onPress={() => navigation.navigate(notificationRoute)}
-                      >
-                          <FontAwesome5 name="bell" size={20} color={colors.text} />
-                          <Text style={[styles.navText, { color: colors.text }]}>Notifications</Text>
-                      </TouchableOpacity>
-      
-                      <TouchableOpacity style={styles.navButton}>
-                          <FontAwesome5 name="cog" size={20} color={colors.primary} />
-                          <Text style={[styles.navText, { color: colors.primary }]}>Settings</Text>
-                      </TouchableOpacity>
-                  </View>
+      {/* Bottom Navigation (FIXED: Using String literals) */}
+      <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
+          <TouchableOpacity 
+              style={styles.navButton} 
+              onPress={() => navigation.navigate('AdminDashboard')} 
+          >
+              <FontAwesome5 name="home" size={20} color={colors.text} />
+              <Text style={[styles.navText, { color: colors.text }]}>Dashboard</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+    style={styles.navButton} 
+    // 👇 Update this line
+    onPress={() => navigation.navigate('AdminNotificationsScreen')} 
+>
+    <FontAwesome5 name="bell" size={20} color={colors.text} />
+    <Text style={[styles.navText, { color: colors.text }]}>Notifications</Text>
+</TouchableOpacity>
+
+          <TouchableOpacity style={styles.navButton}>
+              <FontAwesome5 name="cog" size={20} color={colors.primary} />
+              <Text style={[styles.navText, { color: colors.primary }]}>Settings</Text>
+          </TouchableOpacity>
+      </View>
     </View>
   );
 }
