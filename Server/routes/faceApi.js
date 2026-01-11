@@ -167,4 +167,47 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
   }
 });
 
+// --- 7. MANAGE STUDENTS ROUTES ---
+
+// GET All Students
+router.get("/students", async (req, res) => {
+  try {
+    const snapshot = await db.collection("students").get();
+    const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(students);
+  } catch (error) {
+    console.error("Fetch Students Error:", error);
+    res.status(500).json({ message: "Failed to fetch students" });
+  }
+});
+
+// PUT Update Student
+router.put("/students/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { studentName, grade, section, guardianName, guardianPhone } = req.body;
+
+    await db.collection("students").doc(id).update({
+      studentName, grade, section, guardianName, guardianPhone
+    });
+
+    res.json({ success: true, message: "Student Updated" });
+  } catch (error) {
+    console.error("Update Student Error:", error);
+    res.status(500).json({ message: "Failed to update student" });
+  }
+});
+
+// DELETE Student
+router.delete("/students/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.collection("students").doc(id).delete();
+    res.json({ success: true, message: "Student Deleted" });
+  } catch (error) {
+    console.error("Delete Student Error:", error);
+    res.status(500).json({ message: "Failed to delete student" });
+  }
+});
+
 module.exports = router;
