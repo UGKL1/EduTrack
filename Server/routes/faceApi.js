@@ -10,7 +10,7 @@ const admin = require("firebase-admin");
 // We use a try-catch block to debug the key file specifically
 try {
   const serviceAccountPath = path.join(__dirname, "../serviceAccountKey.json");
-  
+
   if (!fs.existsSync(serviceAccountPath)) {
     throw new Error(`File not found at: ${serviceAccountPath}`);
   }
@@ -63,7 +63,7 @@ async function loadModels() {
 
     // Verify loading
     if (!landmarkNet.params) {
-        throw new Error("LandmarkNet failed to load weights.");
+      throw new Error("LandmarkNet failed to load weights.");
     }
 
     modelsLoaded = true;
@@ -80,15 +80,15 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
   if (!modelsLoaded) return res.status(503).json({ message: "Server initializing..." });
 
   try {
-    const { studentId, studentName } = req.body;
+    const { studentId, studentName, grade, section, guardianName, guardianPhone } = req.body;
     if (!req.file || !studentId || !studentName) return res.status(400).json({ message: "Missing data" });
 
     const img = await canvas.loadImage(req.file.buffer);
-    
+
     // 1. Detect Face
     const detections = await ssdNet.locateFaces(img);
     if (!detections || detections.length === 0) {
-        return res.status(400).json({ message: "No face detected." });
+      return res.status(400).json({ message: "No face detected." });
     }
     const face = detections[0];
 
@@ -100,6 +100,10 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
     await db.collection("students").doc(studentId).set({
       studentName: studentName,
       studentId: studentId,
+      grade: grade || null,
+      section: section || null,
+      guardianName: guardianName || null,
+      guardianPhone: guardianPhone || null,
       faceDescriptor: Array.from(descriptor),
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -121,11 +125,11 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
     if (!req.file) return res.status(400).json({ message: "No photo uploaded" });
 
     const img = await canvas.loadImage(req.file.buffer);
-    
+
     // 1. Detect Face
     const detections = await ssdNet.locateFaces(img);
     if (!detections || detections.length === 0) {
-        return res.status(400).json({ message: "No face detected." });
+      return res.status(400).json({ message: "No face detected." });
     }
     const face = detections[0];
 
