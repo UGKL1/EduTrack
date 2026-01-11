@@ -1,2 +1,17 @@
-// Change this to your computer's IP address!
-export const API_URL = "http://192.168.8.115:3000/api";
+import Constants from 'expo-constants';
+
+// Automatically detect the server IP in development
+function getAPIUrl() {
+    // In Expo development, the debuggerHost contains the dev machine's IP
+    const debuggerHost = Constants.expoConfig?.hostUri || Constants.manifest?.debuggerHost;
+
+    if (debuggerHost) {
+        const host = debuggerHost.split(':')[0]; // Remove port
+        return `http://${host}:3000/api`;
+    }
+
+    // Fallback for production or if detection fails
+    return process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api";
+}
+
+export const API_URL = getAPIUrl();
