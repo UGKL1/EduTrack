@@ -50,14 +50,7 @@ function AuthStack() {
       <Stack.Screen name="StaffSignUp" component={StaffSignUp} />
       <Stack.Screen name="AdminSignUp" component={AdminSignUp} />
       <Stack.Screen name="ResetPw" component={ResetPw} />
-      <Stack.Screen name="TeacherProfile" component={TeacherProfile} />
-      <Stack.Screen name="ManageStudent" component={ManageStudent} />
-      <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
-      <Stack.Screen name="QuickAccess" component={QuickAccess} />
-      <Stack.Screen name="AttendanceReports" component={AttendanceReports} />
-      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
-      <Stack.Screen name="AdminReport" component={AdminReport} />
-      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+
 
 
     </Stack.Navigator>
@@ -96,7 +89,7 @@ function AdminAppStack() {
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="ManageStudent" component={ManageStudent} />
       <Stack.Screen name="ManageTeachers" component={ManageTeachers} />
-      <Stack.Screen name="AdminNotificationsScreen" component={AdminNotificationsScreen}/>
+      <Stack.Screen name="AdminNotificationsScreen" component={AdminNotificationsScreen} />
       <Stack.Screen name="AdminReport" component={AdminReport} />
       <Stack.Screen name="ResetPw" component={ResetPw} />
     </Stack.Navigator>
