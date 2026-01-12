@@ -1,24 +1,23 @@
 import React, { useState } from "react";
-import {
-  View, Text, TextInput, TouchableOpacity, Image, Alert,
-  ActivityIndicator, ScrollView, StyleSheet, Platform, Modal, FlatList
+import { 
+  View, Text, TextInput, TouchableOpacity, Alert, 
+  ActivityIndicator, ScrollView, StyleSheet, Platform, KeyboardAvoidingView 
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from '@expo/vector-icons'; 
 import axios from "axios";
 import { API_URL } from '../../config/config';
 
+// Use your specific API URL
 const BACKEND_API_URL = API_URL;
 
 const GRADES = ["1", "2", "3", "4", "5"];
 const SECTIONS = ["A", "B", "C", "D", "E"];
 
-export default function RegisterScreen() {
+export default function RegisterScreen({ navigation }) {
+  // --- STATE ---
   const [name, setName] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [grade, setGrade] = useState("");
-  const [section, setSection] = useState("");
-  const [guardianName, setGuardianName] = useState("");
-  const [guardianPhone, setGuardianPhone] = useState("");
+  const [studentId, setStudentId] = useState(""); // State for ID
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -26,71 +25,44 @@ export default function RegisterScreen() {
   const [gradeModalVisible, setGradeModalVisible] = useState(false);
   const [sectionModalVisible, setSectionModalVisible] = useState(false);
 
+  // --- 1. CAMERA FUNCTION (EXACT PREVIOUS METHOD) ---
   const pickImage = async () => {
     const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
     if (!result.canceled) setImage(result.assets[0].uri);
   };
 
-  const validateInputs = () => {
-    if (!name || !studentId || !image || !grade || !section || !guardianName || !guardianPhone) {
-      Alert.alert("Missing Data", "Please fill all fields and take a photo.");
-      return false;
-    }
-
-    // Guardian Name Validation (No numbers)
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    if (!nameRegex.test(guardianName)) {
-      Alert.alert("Invalid Input", "Guardian Name cannot contain numbers.");
-      return false;
-    }
-
-    // Phone Validation (Exactly 10 digits)
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(guardianPhone)) {
-      Alert.alert("Invalid Input", "Phone Number must be exactly 10 digits.");
-      return false;
-    }
-
-    return true;
-  };
-
   const handleRegister = async () => {
-    if (!validateInputs()) return;
-
+    // Check if Name, ID, or Image is missing
+    if (!name || !studentId || !image) {
+      return Alert.alert("Missing Data", "Please enter Name, Student ID, and take a photo.");
+    }
+    
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("studentName", name);
-      formData.append("studentId", studentId);
-      formData.append("grade", grade);
-      formData.append("section", section);
-      formData.append("guardianName", guardianName);
-      formData.append("guardianPhone", guardianPhone);
-
+      formData.append("studentId", studentId); // Send the REAL ID now
+      
       const filename = image.split('/').pop();
+      // Auto-detect file type (jpg/png)
       const match = /\.(\w+)$/.exec(filename);
       const type = match ? `image/${match[1]}` : `image/jpeg`;
 
-      formData.append("faceImage", {
-        uri: Platform.OS === "android" ? image : image.replace("file://", ""),
-        name: filename,
-        type: type
+      formData.append("faceImage", { 
+      uri: Platform.OS === "android" ? image : image.replace("file://", ""),
+      name: filename, 
+      type: type 
       });
 
       console.log("Sending data to:", `${BACKEND_API_URL}/enroll-student`);
 
-      const response = await axios.post(`${BACKEND_API_URL}/enroll-student`, formData, {
+      await axios.post(`${BACKEND_API_URL}/enroll-student`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       Alert.alert("Success", "Student Registered Successfully!");
-      // Reset Form
       setName("");
       setStudentId("");
-      setGrade("");
-      setSection("");
-      setGuardianName("");
-      setGuardianPhone("");
       setImage(null);
 
     } catch (err) {
@@ -127,89 +99,66 @@ export default function RegisterScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>Register Student</Text>
-
+      
       {/* Name Input */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Full Name</Text>
-        <TextInput
-          placeholder="e.g. John Doe"
+        <TextInput 
+          placeholder="e.g. John Doe" 
           placeholderTextColor="#666"
           value={name} onChangeText={setName}
           style={styles.input}
         />
       </View>
 
-      {/* Student ID Input */}
+      {/* Student ID Input (NEW) */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Student ID</Text>
-        <TextInput
-          placeholder="e.g. S001"
+        <TextInput 
+          placeholder="e.g. S001" 
           placeholderTextColor="#666"
           value={studentId} onChangeText={setStudentId}
           style={styles.input}
         />
       </View>
 
-      {/* Class Selection */}
-      <View style={styles.row}>
-        <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
-          <Text style={styles.label}>Grade (1-5)</Text>
-          <TouchableOpacity onPress={() => setGradeModalVisible(true)} style={styles.pickerButton}>
-            <Text style={[styles.pickerText, !grade && { color: "#666" }]}>{grade || "Select"}</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Home Address</Text>
+            <TextInput 
+              placeholder="No, Street, City" 
+              placeholderTextColor="#666"
+              value={address} onChangeText={setAddress}
+              style={[styles.input, { height: 80, textAlignVertical: 'top' }]} 
+              multiline
+            />
+          </View>
+
+          {/* Section: Biometric Data */}
+          <Text style={styles.sectionHeader}>Biometric Data</Text>
+
+          <TouchableOpacity onPress={pickImage} style={[styles.cameraBox, image && styles.cameraBoxSuccess]}>
+            {image ? (
+              <View style={{ alignItems: 'center' }}>
+                 <Ionicons name="checkmark-circle" size={50} color="#27ae60" />
+                 <Text style={[styles.cameraText, { color: "#27ae60" }]}>Photo Captured</Text>
+                 <Text style={{ color: "#666", fontSize: 12, marginTop: 5 }}>(Tap to Retake)</Text>
+              </View>
+            ) : (
+              <View style={{ alignItems: 'center' }}>
+                 <Ionicons name="scan-outline" size={40} color="#007AFF" />
+                 <Text style={styles.cameraText}>Scan Face</Text>
+              </View>
+            )}
           </TouchableOpacity>
-        </View>
-        <View style={[styles.inputGroup, { flex: 1 }]}>
-          <Text style={styles.label}>Section (A-E)</Text>
-          <TouchableOpacity onPress={() => setSectionModalVisible(true)} style={styles.pickerButton}>
-            <Text style={[styles.pickerText, !section && { color: "#666" }]}>{section || "Select"}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {renderPickerModal(gradeModalVisible, setGradeModalVisible, GRADES, setGrade, "Select Grade")}
-      {renderPickerModal(sectionModalVisible, setSectionModalVisible, SECTIONS, setSection, "Select Section")}
-
-      {/* Guardian Details */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Guardian Name</Text>
-        <TextInput
-          placeholder="No numbers allowed"
-          placeholderTextColor="#666"
-          value={guardianName} onChangeText={setGuardianName}
-          style={styles.input}
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Guardian Phone</Text>
-        <TextInput
-          placeholder="10 digits"
-          placeholderTextColor="#666"
-          value={guardianPhone} onChangeText={setGuardianPhone}
-          keyboardType="numeric"
-          maxLength={10}
-          style={styles.input}
-        />
-      </View>
-
-      {/* Camera Section */}
-      <Text style={styles.label}>Face Photo</Text>
-      <TouchableOpacity onPress={pickImage} style={styles.cameraBox}>
-        {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
-        ) : (
-          <Text style={styles.cameraText}>Tap to Take Photo</Text>
-        )}
-      </TouchableOpacity>
 
       {/* Register Button */}
-      <TouchableOpacity
-        onPress={handleRegister}
-        disabled={loading}
+      <TouchableOpacity 
+        onPress={handleRegister} 
+        disabled={loading} 
         style={styles.button}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#fff"/>
         ) : (
           <Text style={styles.buttonText}>Register Now</Text>
         )}
@@ -219,39 +168,42 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, backgroundColor: "#0D0D0D", padding: 20, alignItems: "center" },
-  header: { color: "#fff", fontSize: 24, fontWeight: "bold", marginBottom: 30, marginTop: 10 },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    backgroundColor: "#0D0D0D",
+    borderBottomWidth: 1,
+    borderBottomColor: "#333",
+  },
+  backButton: { padding: 10, marginRight: 10 },
+  headerTitle: { color: "#fff", fontSize: 20, fontWeight: "bold" },
+  
+  container: { flexGrow: 1, padding: 20, alignItems: "center" },
+  
+  sectionHeader: { 
+    width: "100%", color: "#007AFF", fontSize: 14, fontWeight: "bold", 
+    marginTop: 15, marginBottom: 15, textTransform: "uppercase", letterSpacing: 1 
+  },
+
   inputGroup: { width: "100%", marginBottom: 15 },
   label: { color: "#ccc", marginBottom: 5, alignSelf: "flex-start" },
-  input: {
-    width: "100%", backgroundColor: "#1E1E1E", color: "#fff",
-    padding: 15, borderRadius: 10, borderWidth: 1, borderColor: "#333"
+  input: { 
+    width: "100%", backgroundColor: "#1E1E1E", color: "#fff", 
+    padding: 15, borderRadius: 10, borderWidth: 1, borderColor: "#333" 
   },
-  row: { flexDirection: "row", width: "100%", justifyContent: "space-between" },
-  pickerButton: {
-    backgroundColor: "#1E1E1E", padding: 15, borderRadius: 10, borderWidth: 1, borderColor: "#333",
-    alignItems: "center"
-  },
-  pickerText: { color: "#fff", fontSize: 16 },
-  cameraBox: {
-    width: 200, height: 200, backgroundColor: "#1E1E1E",
-    justifyContent: "center", alignItems: "center", marginBottom: 30,
-    borderRadius: 10, borderStyle: 'dashed', borderWidth: 1, borderColor: '#007AFF'
+  cameraBox: { 
+    width: 200, height: 200, backgroundColor: "#1E1E1E", 
+    justifyContent: "center", alignItems: "center", marginBottom: 30, 
+    borderRadius: 10, borderStyle: 'dashed', borderWidth: 1, borderColor: '#007AFF' 
   },
   image: { width: "100%", height: "100%", borderRadius: 10 },
   cameraText: { color: "#007AFF", fontSize: 16 },
-  button: {
-    backgroundColor: "#007AFF", padding: 16, borderRadius: 10,
-    width: "100%", alignItems: "center", marginBottom: 20
+  button: { 
+    backgroundColor: "#007AFF", padding: 16, borderRadius: 10, 
+    width: "100%", alignItems: "center", marginBottom: 20 
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 18 },
-
-  // Modal Styles
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center" },
-  modalContent: { width: "80%", backgroundColor: "#1E1E1E", borderRadius: 10, padding: 20, maxHeight: "50%" },
-  modalTitle: { color: "#fff", fontSize: 20, fontWeight: "bold", marginBottom: 15, textAlign: "center" },
-  modalItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: "#333" },
-  modalItemText: { color: "#fff", fontSize: 16, textAlign: "center" },
-  closeButton: { marginTop: 15, backgroundColor: "#333", padding: 10, borderRadius: 5, alignItems: "center" },
-  closeButtonText: { color: "#fff" }
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 18 }
 });

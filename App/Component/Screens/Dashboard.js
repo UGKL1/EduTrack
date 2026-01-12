@@ -53,7 +53,7 @@ export default function Dashboard({ navigation }) {
         {[
           { icon: 'clipboard-check', label: 'Mark Attendance', nav: 'AttendanceScreen' },
           { icon: 'user', label: 'View Profile', nav: 'TeacherProfile' },
-          { icon: 'users', label: "Student's Details", nav: 'RegisterScreen' }, // Add nav when ready
+          { icon: 'users', label: "Student's Details", nav: 'ManageStudent' }, // Add nav when ready
           { icon: 'chart-bar', label: 'Class Overview', nav: '' },
           { icon: 'file-alt', label: 'Reports', nav: 'AttendanceReports' },
           { icon: 'bolt', label: 'Quick Access', nav: 'QuickAccess' },

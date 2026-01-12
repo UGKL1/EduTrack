@@ -73,6 +73,7 @@ function TeacherAppStack() {
       <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
       <Stack.Screen name="ResetPw" component={ResetPw} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+      <Stack.Screen name="ManageStudent" component={ManageStudent} />
 
     </Stack.Navigator>
   );
@@ -92,6 +93,7 @@ function AdminAppStack() {
       <Stack.Screen name="AdminNotificationsScreen" component={AdminNotificationsScreen} />
       <Stack.Screen name="AdminReport" component={AdminReport} />
       <Stack.Screen name="ResetPw" component={ResetPw} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
     </Stack.Navigator>
   );
 }
