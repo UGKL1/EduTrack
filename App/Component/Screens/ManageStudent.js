@@ -1,147 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity,
-  FlatList, Alert, Modal, ActivityIndicator
+import React, { useState, useCallback } from 'react';
+import { 
+  View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, 
+  ActivityIndicator, RefreshControl, Alert, Image 
 } from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import axios from "axios";
-import { API_URL } from '../../config/config';
-import { useTheme } from '../../context/ThemeContext';
-
-const BACKEND_API_URL = API_URL;
-
-const GRADES = ["1", "2", "3", "4", "5"];
-const SECTIONS = ["A", "B", "C", "D", "E"];
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
+import axios from 'axios';
+import { API_URL } from '../../config/config'; // Make sure this path is correct
 
 export default function ManageStudent() {
   const navigation = useNavigation();
-  const { colors } = useTheme();
+  const { colors } = useTheme(); 
 
   const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
-  // Edit State
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editingStudent, setEditingStudent] = useState(null);
-
-  // Picker Modals
-  const [gradeModalVisible, setGradeModalVisible] = useState(false);
-  const [sectionModalVisible, setSectionModalVisible] = useState(false);
-
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
+  // --- 1. Fetch Students from Server ---
   const fetchStudents = async () => {
-    setLoading(true);
     try {
-      const response = await axios.get(`${BACKEND_API_URL}/students`);
+      const response = await axios.get(`${API_URL}/students`);
       setStudents(response.data);
     } catch (error) {
-      Alert.alert("Error", "Failed to load students.");
+      console.error("Fetch Error:", error);
+      // Optional: Fail silently or show a small toast, avoiding popup spam
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const handleDelete = (id) => {
-    Alert.alert("Delete Student", "Are you sure you want to delete this student?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete", style: "destructive", onPress: async () => {
-          try {
-            await axios.delete(`${BACKEND_API_URL}/students/${id}`);
-            setStudents(prev => prev.filter(s => s.id !== id));
-            Alert.alert("Success", "Student deleted.");
-          } catch (err) {
-            Alert.alert("Error", "Failed to delete student.");
-          }
-        }
-      }
-    ]);
-  };
+  // --- 2. Auto-Reload when screen opens/returns ---
+  useFocusEffect(
+    useCallback(() => {
+      fetchStudents();
+    }, [])
+  );
 
-  const openEditModal = (student) => {
-    setEditingStudent({ ...student });
-    setEditModalVisible(true);
-  };
+  // --- 3. Filter Logic for Search ---
+  const filteredStudents = students.filter(student => 
+    student.studentName?.toLowerCase().includes(searchText.toLowerCase()) ||
+    student.studentId?.toLowerCase().includes(searchText.toLowerCase())
+  );
 
-  const handleUpdate = async () => {
-    if (!editingStudent) return;
-
-    // Validation
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    const phoneRegex = /^\d{10}$/;
-
-    if (editingStudent.guardianName && !nameRegex.test(editingStudent.guardianName)) {
-      return Alert.alert("Invalid Input", "Guardian Name cannot contain numbers.");
-    }
-    if (editingStudent.guardianPhone && !phoneRegex.test(editingStudent.guardianPhone)) {
-      return Alert.alert("Invalid Input", "Phone Number must be exactly 10 digits.");
-    }
-
-    try {
-      await axios.put(`${BACKEND_API_URL}/students/${editingStudent.id}`, editingStudent);
-      setStudents(prev => prev.map(s => s.id === editingStudent.id ? editingStudent : s));
-      setEditModalVisible(false);
-      Alert.alert("Success", "Student updated.");
-    } catch (err) {
-      Alert.alert("Error", "Failed to update student.");
-    }
-  };
-
-  const filteredStudents = students.filter(s => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      s.studentName?.toLowerCase().includes(query) ||
-      s.studentId?.toLowerCase().includes(query) ||
-      s.grade?.toLowerCase().includes(query)
-    );
-  });
-
-  const renderStudentItem = ({ item }) => (
-    <View style={[styles.studentCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <View style={styles.studentInfo}>
-        <Text style={[styles.studentName, { color: colors.text }]}>{item.studentName}</Text>
-        <Text style={[styles.studentDetail, { color: colors.subText }]}>ID: {item.studentId}</Text>
-        <Text style={[styles.studentDetail, { color: colors.subText }]}>Class: {item.grade}-{item.section}</Text>
+  // --- 4. Render Student Card ---
+  const renderStudent = ({ item }) => (
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={styles.avatar}>
+        <FontAwesome5 name="user-graduate" size={24} color={colors.text} />
       </View>
-      <View style={styles.actionButtons}>
-        <TouchableOpacity onPress={() => openEditModal(item)} style={styles.editBtn}>
-          <FontAwesome5 name="edit" size={16} color="#007AFF" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
-          <FontAwesome5 name="trash" size={16} color="#FF3B30" />
-        </TouchableOpacity>
+      <View style={styles.cardInfo}>
+        <Text style={[styles.cardTitle, { color: colors.text }]}>{item.studentName}</Text>
+        <Text style={[styles.cardSubtitle, { color: colors.placeholder }]}>ID: {item.studentId}</Text>
       </View>
+      <Ionicons name="chevron-forward" size={20} color={colors.placeholder} />
     </View>
   );
 
-  const renderPickerModal = (visible, setVisible, data, onSelect, title) => (
-    <Modal visible={visible} transparent={true} animationType="fade">
-      <View style={styles.modalOverlay}>
-        <View style={styles.pickerContent}>
-          <Text style={styles.modalTitle}>{title}</Text>
-          <FlatList
-            data={data}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.pickerItem} onPress={() => { onSelect(item); setVisible(false); }}>
-                <Text style={styles.pickerItemText}>{item}</Text>
-              </TouchableOpacity>
-            )}
-          />
-          <TouchableOpacity onPress={() => setVisible(false)} style={styles.closePickerBtn}>
-            <Text style={styles.closePickerText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
-
+  // --- 5. Navigation Tab Component ---
   const TabIcon = ({ name, label, onPress }) => (
     <TouchableOpacity style={styles.navButton} onPress={onPress}>
       <FontAwesome5 name={name} size={20} color={colors.text} />
@@ -151,12 +69,13 @@ export default function ManageStudent() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Manage Student</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Manage Students</Text>
       </View>
 
       {/* Search Bar */}
@@ -166,87 +85,39 @@ export default function ManageStudent() {
           placeholder="Search by Name or ID..."
           placeholderTextColor={colors.placeholder}
           style={[styles.searchInput, { color: colors.text }]}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
+          value={searchText}
+          onChangeText={setSearchText}
         />
       </View>
 
-      {/* Student List */}
-      {loading ? <ActivityIndicator size="large" color="#007AFF" /> : (
+      {/* Content Area */}
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.primary || "#4A90E2"} style={{ marginTop: 20 }} />
+      ) : (
         <FlatList
           data={filteredStudents}
-          keyExtractor={item => item.id}
-          renderItem={renderStudentItem}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          keyExtractor={(item) => item.studentId}
+          renderItem={renderStudent}
+          contentContainerStyle={{ paddingBottom: 100 }} // Space for Bottom Nav
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchStudents(); }} />
+          }
+          ListEmptyComponent={
+            <View style={{ alignItems: 'center', marginTop: 50 }}>
+              <FontAwesome5 name="user-slash" size={40} color={colors.placeholder} />
+              <Text style={{ color: colors.placeholder, marginTop: 10 }}>No students found.</Text>
+            </View>
+          }
         />
       )}
 
-      {/* Edit Modal */}
-      <Modal visible={editModalVisible} animationType="slide" transparent={true}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.editModalContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Student</Text>
-
-            {editingStudent && (
-              <>
-                <Text style={[styles.label, { color: colors.subText }]}>Name</Text>
-                <TextInput
-                  style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-                  value={editingStudent.studentName}
-                  onChangeText={t => setEditingStudent({ ...editingStudent, studentName: t })}
-                />
-
-                {/* Grade & Section Selectors */}
-                <View style={styles.row}>
-                  <View style={{ flex: 1, marginRight: 10 }}>
-                    <Text style={[styles.label, { color: colors.subText }]}>Grade</Text>
-                    <TouchableOpacity onPress={() => setGradeModalVisible(true)} style={[styles.pickerButton, { borderColor: colors.border }]}>
-                      <Text style={[styles.pickerText, { color: colors.text }]}>{editingStudent.grade || "Select"}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.label, { color: colors.subText }]}>Section</Text>
-                    <TouchableOpacity onPress={() => setSectionModalVisible(true)} style={[styles.pickerButton, { borderColor: colors.border }]}>
-                      <Text style={[styles.pickerText, { color: colors.text }]}>{editingStudent.section || "Select"}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <Text style={[styles.label, { color: colors.subText }]}>Guardian Name</Text>
-                <TextInput
-                  style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-                  value={editingStudent.guardianName}
-                  onChangeText={t => setEditingStudent({ ...editingStudent, guardianName: t })}
-                />
-                <Text style={[styles.label, { color: colors.subText }]}>Guardian Phone</Text>
-                <TextInput
-                  style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-                  value={editingStudent.guardianPhone}
-                  onChangeText={t => setEditingStudent({ ...editingStudent, guardianPhone: t })}
-                  keyboardType="numeric"
-                  maxLength={10}
-                />
-
-                <View style={styles.modalActions}>
-                  <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.cancelBtn}>
-                    <Text style={styles.cancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={handleUpdate} style={styles.saveBtn}>
-                    <Text style={styles.saveText}>Save Changes</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
-
-      {/* Picker Modals Reuse */}
-      {renderPickerModal(gradeModalVisible, setGradeModalVisible, GRADES,
-        (val) => setEditingStudent({ ...editingStudent, grade: val }), "Select Grade")}
-      {renderPickerModal(sectionModalVisible, setSectionModalVisible, SECTIONS,
-        (val) => setEditingStudent({ ...editingStudent, section: val }), "Select Section")}
-
+      {/* FLOATING ADD BUTTON */}
+      <TouchableOpacity 
+        style={[styles.fab, { backgroundColor: '#007AFF' }]} 
+        onPress={() => navigation.navigate('RegisterScreen')}
+      >
+        <Ionicons name="add" size={32} color="#FFF" />
+      </TouchableOpacity>
 
       {/* Bottom Navigation */}
       <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
@@ -259,51 +130,105 @@ export default function ManageStudent() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 40, paddingHorizontal: 20 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 20, fontWeight: 'bold' },
-  searchBar: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, padding: 10, marginBottom: 20 },
-  searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, fontSize: 14 },
-
-  studentCard: {
-    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    padding: 15, borderRadius: 10, marginBottom: 10, borderWidth: 1
+  container: {
+    flex: 1,
+    paddingTop: 40,
+    paddingHorizontal: 20,
+    paddingBottom: 0, // Removed paddingBottom to let FlatList handle scrolling
   },
-  studentInfo: { flex: 1 },
-  studentName: { fontSize: 16, fontWeight: "bold", marginBottom: 4 },
-  studentDetail: { fontSize: 12 },
-  actionButtons: { flexDirection: "row", gap: 15 },
-  editBtn: { padding: 5 },
-  deleteBtn: { padding: 5 },
-
-  // Modal Styles
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center" },
-  editModalContent: { width: "90%", borderRadius: 15, padding: 20 },
-  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  label: { fontSize: 12, marginBottom: 5, fontWeight: "600" },
-  input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 15, fontSize: 16 },
-  row: { flexDirection: "row", marginBottom: 15 },
-  pickerButton: { borderWidth: 1, borderRadius: 8, padding: 12, alignItems: "center" },
-  pickerText: { fontSize: 16 },
-
-  modalActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
-  cancelBtn: { padding: 15, flex: 1, alignItems: "center", marginRight: 10, backgroundColor: "#333", borderRadius: 8 },
-  cancelText: { color: "#fff" },
-  saveBtn: { padding: 15, flex: 1, alignItems: "center", backgroundColor: "#007AFF", borderRadius: 8 },
-  saveText: { color: "#fff", fontWeight: "bold" },
-
-  // Picker Specific
-  pickerContent: { width: "80%", backgroundColor: "#222", borderRadius: 10, padding: 20, maxHeight: "50%" },
-  pickerItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: "#333" },
-  pickerItemText: { color: "#fff", center: "center", fontSize: 16 },
-  closePickerBtn: { marginTop: 15, padding: 10, alignItems: "center", backgroundColor: "#333", borderRadius: 5 },
-  closePickerText: { color: "#fff" },
-
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginRight: 24, // Balance back arrow
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    marginBottom: 20,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+  },
+  // Student Card Styles
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'transparent', // Handled by theme
+  },
+  avatar: {
+    width: 45,
+    height: 45,
+    borderRadius: 25,
+    backgroundColor: 'rgba(100,100,100,0.1)', // Light generic background
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 15,
+  },
+  cardInfo: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  // Floating Action Button
+  fab: {
+    position: 'absolute',
+    bottom: 90, // Positioned just above the Bottom Nav
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5, // Android Shadow
+    shadowColor: '#000', // iOS Shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    zIndex: 10,
+  },
   bottomNav: {
-    flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 15,
-    borderTopLeftRadius: 20, borderTopRightRadius: 20, position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 15,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
-  navButton: { alignItems: 'center', justifyContent: 'center', flex: 1 },
-  navText: { marginTop: 4, fontSize: 12 },
+  navButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  navText: {
+    marginTop: 4,
+    fontSize: 12,
+  },
 });
