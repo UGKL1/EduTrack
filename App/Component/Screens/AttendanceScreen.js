@@ -88,7 +88,6 @@ export default function AttendanceScreen({ navigation }) {
     try {
       const formData = new FormData();
       const uriParts = uri.split(".");
-
       const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0]; 
       const filename = `photo.${fileType}`;
 
@@ -107,12 +106,20 @@ export default function AttendanceScreen({ navigation }) {
         }
       );
 
+      // ✅ UPDATE: Combine the message and the student name
+      const serverMsg = res.data?.message || "Attendance Marked";
+      const studentName = res.data?.student || ""; // Get student name from backend
+      
+      const displayMessage = studentName 
+        ? `${serverMsg}\n👤 ${studentName}` 
+        : serverMsg;
+
       setScanResult({
         success: true,
-        message: res.data?.message ?? "Attendance marked.",
+        message: displayMessage,
       });
-    } catch (err) {
 
+    } catch (err) {
       console.error("Upload failed:", err?.response?.data ?? err.message ?? err);
       const msg = err?.response?.data?.message ?? "Student not recognized.";
       setScanResult({ success: false, message: msg });
