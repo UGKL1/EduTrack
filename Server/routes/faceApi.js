@@ -10,7 +10,7 @@ const admin = require("firebase-admin");
 // We use a try-catch block to debug the key file specifically
 try {
   const serviceAccountPath = path.join(__dirname, "../serviceAccountKey.json");
-  
+
   if (!fs.existsSync(serviceAccountPath)) {
     throw new Error(`File not found at: ${serviceAccountPath}`);
   }
@@ -63,7 +63,7 @@ async function loadModels() {
 
     // Verify loading
     if (!landmarkNet.params) {
-        throw new Error("LandmarkNet failed to load weights.");
+      throw new Error("LandmarkNet failed to load weights.");
     }
 
     modelsLoaded = true;
@@ -113,13 +113,8 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
     // 4. Save to Firestore
     await db.collection("students").doc(indexNumber).set({
       studentName: studentName,
-      studentId: indexNumber, // Save as both for safety
-      indexNumber: indexNumber,
-      guardianName: guardianName || "N/A",
-      contactNumber: contactNumber || "N/A",
-      homeAddress: homeAddress || "N/A",
-      faceDescriptor: descriptorArray,
-      hasFace: hasFace,
+      studentId: studentId,
+      faceDescriptor: Array.from(descriptor),
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
@@ -172,10 +167,12 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
 
     // 3. Process the Uploaded Image
     const img = await canvas.loadImage(req.file.buffer);
+    
+    // 1. Detect Face
     const detections = await ssdNet.locateFaces(img);
     
     if (!detections || detections.length === 0) {
-        return res.status(400).json({ message: "No face detected in the photo." });
+        return res.status(400).json({ message: "No face detected." });
     }
 
     const face = detections[0];
@@ -225,6 +222,49 @@ router.get("/students", async (req, res) => {
   } catch (error) {
     console.error("Fetch Error:", error);
     res.status(500).json({ message: "Failed to fetch students" });
+  }
+});
+
+// --- 7. MANAGE STUDENTS ROUTES ---
+
+// GET All Students
+router.get("/students", async (req, res) => {
+  try {
+    const snapshot = await db.collection("students").get();
+    const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(students);
+  } catch (error) {
+    console.error("Fetch Students Error:", error);
+    res.status(500).json({ message: "Failed to fetch students" });
+  }
+});
+
+// PUT Update Student
+router.put("/students/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { studentName, grade, section, guardianName, guardianPhone } = req.body;
+
+    await db.collection("students").doc(id).update({
+      studentName, grade, section, guardianName, guardianPhone
+    });
+
+    res.json({ success: true, message: "Student Updated" });
+  } catch (error) {
+    console.error("Update Student Error:", error);
+    res.status(500).json({ message: "Failed to update student" });
+  }
+});
+
+// DELETE Student
+router.delete("/students/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.collection("students").doc(id).delete();
+    res.json({ success: true, message: "Student Deleted" });
+  } catch (error) {
+    console.error("Delete Student Error:", error);
+    res.status(500).json({ message: "Failed to delete student" });
   }
 });
 

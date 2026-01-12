@@ -1,58 +1,113 @@
-# 🎓 EduTrack: Smart Attendance System
+# 📘 EduTrack
 
-**Modern Facial Recognition Attendance System**
+### Smart Attendance Management System using Facial Recognition
 
-EduTrack is a modern attendance system for educational institutions. Using facial recognition on mobile devices, it ensures accuracy, security, and zero manual effort.
+EduTrack is a **mobile-based smart attendance management system** designed for educational institutions. It leverages **facial recognition technology** to automate student attendance, reduce manual errors, prevent proxy attendance, and generate real-time attendance reports for teachers and administrators.
 
----
-
-## 🌟 Core Features
-
-### 👩‍🏫 For Teachers
-
-- **Real-Time Face Recognition** – Instant attendance marking
-- **Offline Support** – Works with limited connectivity
-- **Class Management** – Track student attendance history
-- **Detailed Reports** – Generate & export attendance data
-- **Profile Management** – Customizable teacher profiles
-
-### 👨‍💼 For Administrators
-
-- **Centralized Dashboard** – Complete system overview
-- **User Management** – Handle teachers and students
-- **Advanced Analytics** – Track attendance patterns
-- **Custom Reports** – Generate institution-wide insights
-- **Role-Based Access** – Secure permission system
+🎓 Developed as an academic project
+🏫 Institution: _The Open University of Sri Lanka_
 
 ---
 
-## 🛠️ Technology Stack
+## ✨ Highlights
 
-### 📱 Mobile App
+✅ Facial-recognition-based attendance  
+✅ Role-based access (Teacher / Admin)  
+✅ Real-time reports & summaries  
+✅ Firebase-powered authentication & storage  
+✅ Modern UI with Light / Dark / System themes  
+✅ Integrated Node.js backend for AI processing
 
-- **Framework:** React Native + Expo
-- **UI Components:** Native Base
-- **Camera:** Expo Camera + Face Detection
-- **State Management:** React Hooks
-- **Navigation:** React Navigation v7
-- **Forms & Validation:** React Hook Form
+---
 
-### 🖥️ Backend
+## 🧠 System Overview
 
-- **Server:** Node.js + Express
-- **Face API:** Azure Cognitive Services
-- **Database:** Firebase Firestore
-- **Authentication:** Firebase Auth
-- **File Storage:** Firebase Storage
-- **API Security:** JWT
+EduTrack consists of **two tightly integrated components**:
 
-### 🔧 Development Tools
+### 📱 Frontend (Mobile Application)
 
-- **IDE:** Visual Studio Code
-- **Mobile Testing:** Expo Go
-- **Version Control:** Git + GitHub
-- **API Testing:** Postman
-- **Deployment:** EAS (Expo Application Services)
+- Built using **React Native (Expo)**
+- Used by teachers and administrators
+- Handles UI, authentication, camera access, and navigation
+
+### 🧪 Backend (Facial Recognition API)
+
+- Built using **Node.js + Express**
+- Uses **face-api.js** for facial recognition
+- Processes images sent from the mobile app
+- Returns recognition results in real time
+
+---
+
+## 🛠 Technology Stack
+
+### 📱 Frontend
+
+- React Native (Expo)
+- React Navigation (Stack Navigation)
+- Firebase Authentication
+- Firebase Firestore
+- Firebase Storage
+- Expo Image Picker & Camera
+- AsyncStorage (theme persistence)
+
+### 🧠 Backend
+
+- Node.js
+- Express.js
+- face-api.js
+- canvas
+- multer
+
+---
+
+## 📁 Verified Project Structure
+
+```
+EduTrack/
+│
+├── App/
+│   ├── assets/
+│   │   └── edulogo.png
+│   │
+│   ├── Component/
+│   │   └── Screens/
+│   │       ├── Admin.js
+│   │       ├── AdminDashboard.js
+│   │       ├── AdminNotificationsScreen.js
+│   │       ├── AdminReport.js
+│   │       ├── AdminSignUp.js
+│   │       ├── AttendanceReports.js
+│   │       ├── AttendanceScreen.js
+│   │       ├── Dashboard.js
+│   │       ├── Login.js
+│   │       ├── ManageStudent.js
+│   │       ├── ManageTeachers.js
+│   │       ├── NotificationsScreen.js
+│   │       ├── QuickAccess.js
+│   │       ├── ResetPw.js
+│   │       ├── SettingsScreen.js
+│   │       ├── SignupOrLogin.js
+│   │       ├── StaffSignUp.js
+│   │       └── TeacherProfile.js
+│   │
+│   ├── config/
+│   │   └── firebase.js
+│   │
+│   ├── context/
+│   │   └── ThemeContext.js
+│   │
+│   └── hooks/
+│       └── useAuth.js
+│
+├──Server/
+│   ├── routes/
+│   │   └── faceApi.js
+│   └── models/
+│       └── (face-api model files)
+├── package.json
+└── README.md
+```
 
 ---
 
@@ -75,22 +130,28 @@ npm install
 
 ### 2. Environment Setup
 
-Create `.env` in both App and Server directories:
+Create `.env` in App directory:
 
 ```env
 # App/.env
-FIREBASE_API_KEY=your_key
-FIREBASE_AUTH_DOMAIN=your_domain
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_STORAGE_BUCKET=your_bucket
-FIREBASE_APP_ID=your_app_id
-API_URL=http://your_server_url:3000
-
-# Server/.env
-AZURE_FACE_API_KEY=your_key
-AZURE_FACE_API_ENDPOINT=your_endpoint
-AZURE_PERSON_GROUP_ID=your_group_id
+EXPO_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=your_firebase_measurement_id
 ```
+
+Create `config.json` in server directory:
+
+```json
+# Server/serviceAccountKey.json
+//Change this to your computer's IP address!
+export const API_URL = "http://192.000.0.0/api";
+```
+
+get private service account key from firebase console and put that as `serviceAccountKey.json` in Server directory:
 
 ### 3. Start Development Servers
 
@@ -101,55 +162,8 @@ npx expo start
 
 # Start backend server (new terminal)
 cd Server
-npm start
+node index.js
 ```
-
----
-
-## 📱 App Navigation
-
-```
-├── Auth Stack
-│   ├── SignupOrLogin
-│   ├── Login (Teacher)
-│   ├── Admin Login
-│   ├── Reset Password
-│   └── Staff/Admin SignUp
-│
-├── Teacher Stack
-│   ├── Dashboard
-│   ├── Attendance Screen
-│   ├── Reports
-│   ├── Profile
-│   └── Settings
-│
-└── Admin Stack
-    ├── Dashboard
-    ├── Manage Students
-    ├── Manage Teachers
-    ├── Reports
-    └── Settings
-```
-
----
-
-## 🔒 Security Features
-
-- **Authentication:** Firebase email/password + JWT
-- **Face Data:** Azure secure face templates
-- **API Security:** Request validation & rate limiting
-- **Data Privacy:** GDPR-compliant data handling
-- **Audit Logs:** Track all system activities
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ---
 
@@ -158,14 +172,16 @@ npm start
 **The Open University of Sri Lanka - Group UGKL_1**
 
 - 🎓 **Supervisor:** U.G.K.L. Senarathna
-- 👨‍💻 **Lead Developer:** K.R.A.R. Jayathilaka
-- 🎨 **UI/UX:** L.G.S.B. Liyanage
-- 📱 **Mobile Dev:** F.F. Shamra
-- 🧪 **QA Lead:** Z.I.K. Nuha
-- 📋 **Documentation:** M.S. Hafsa
+- 👨‍💻 **Lead Development / Project Manage** K.R.A.R. Jayathilaka
+- 🎨 **UI/UX / Backend Development** L.G.S.B. Liyanage
+- 📱 **Frontend Develpment / QA and Testing ** F.F. Shamra
+- 🧪 **Frontend Develpment / QA and Testing ** Z.I.K. Nuha
+- 📋 **UI/UX / Documentation:** M.S. Hafsa
 
 ---
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
