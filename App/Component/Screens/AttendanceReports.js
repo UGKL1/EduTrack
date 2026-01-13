@@ -23,7 +23,7 @@ export default function AttendanceReports({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ present: 0, absent: 0 });
 
-  // Filter State
+  // Filter attendance data
   const [reportTypeOpen, setReportTypeOpen] = useState(false);
   const [reportType, setReportType] = useState('Daily');
   const [reportTypes] = useState([
