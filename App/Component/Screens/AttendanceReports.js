@@ -273,7 +273,7 @@ export default function AttendanceReports({ navigation }) {
         />
       )}
 
-      {/* Search & Filters */}
+      {/* Search & Filter */}
       <View style={[styles.filterContainer, { zIndex: 2000 }]}>
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
