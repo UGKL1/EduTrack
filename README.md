@@ -143,14 +143,6 @@ EXPO_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
 EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=your_firebase_measurement_id
 ```
 
-Create `config.json` in server directory:
-
-```json
-# Server/serviceAccountKey.json
-//Change this to your computer's IP address!
-export const API_URL = "http://192.000.0.0/api";
-```
-
 get private service account key from firebase console and put that as `serviceAccountKey.json` in Server directory:
 
 ### 3. Start Development Servers
