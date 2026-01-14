@@ -3,10 +3,24 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
+import { signOut } from 'firebase/auth'; // Import signOut
+import { auth } from '../../config/firebase'; // Import auth
+import Toast from 'react-native-toast-message'; // Import Toast
 
 export default function QuickAccess() {
   const navigation = useNavigation();
   const { colors } = useTheme(); // Use Theme
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      Toast.show({ type: 'success', text1: 'Logged out successfully.' });
+      // Navigation to login is typically handled by an auth listener in the main navigator
+    } catch (error) {
+      console.log('Logout Error:', error.message);
+      Toast.show({ type: 'error', text1: 'Failed to log out.' });
+    }
+  };
 
   const ActionButton = ({ label, icon, onPress }) => (
     <TouchableOpacity style={styles.actionButton} onPress={onPress}>
@@ -35,7 +49,7 @@ export default function QuickAccess() {
       {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../assets/edulogo.png')} 
+          source={require('../../assets/edulogo.png')}
           style={styles.logo}
         />
         <Text style={[styles.brand, { color: colors.text }]}>EDUTRACK</Text>
@@ -43,11 +57,31 @@ export default function QuickAccess() {
 
       {/* Action Buttons */}
       <View style={styles.buttonGroup}>
-        <ActionButton label="Edit Attendance History" icon="edit" />
-        <ActionButton label="Export Report" icon="file-alt" />
-        <ActionButton label="Add Student" icon="user-plus" />
-        <ActionButton label="Update Student" icon="user-edit" />
-        <ActionButton label="Logout" icon="power-off" />
+        <ActionButton
+          label="Edit Attendance History"
+          icon="edit"
+          onPress={() => console.log('Edit Attendance History Pressed')}
+        />
+        <ActionButton
+          label="Export Report"
+          icon="file-alt"
+          onPress={() => navigation.navigate('AttendanceReports')}
+        />
+        <ActionButton
+          label="Add Student"
+          icon="user-plus"
+          onPress={() => navigation.navigate('RegisterScreen')}
+        />
+        <ActionButton
+          label="Update Student"
+          icon="user-edit"
+          onPress={() => navigation.navigate('ManageStudent')}
+        />
+        <ActionButton
+          label="Logout"
+          icon="power-off"
+          onPress={handleLogout}
+        />
       </View>
 
       {/* Bottom Navigation */}
