@@ -22,6 +22,8 @@ import ManageStudent from './Component/Screens/ManageStudent';
 import ManageTeachers from './Component/Screens/ManageTeachers';
 import QuickAccess from './Component/Screens/QuickAccess';
 import AttendanceReports from './Component/Screens/AttendanceReports';
+import ClassOverView from './Component/Screens/ClassOverView';
+
 
 
 import NotificationsScreen from './Component/Screens/NotificationsScreen';
@@ -74,6 +76,8 @@ function TeacherAppStack() {
       <Stack.Screen name="ResetPw" component={ResetPw} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       <Stack.Screen name="ManageStudent" component={ManageStudent} />
+      <Stack.Screen name="ClassOverView" component={ClassOverView} />
+
 
     </Stack.Navigator>
   );
