@@ -13,6 +13,8 @@ import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 export default function StaffSignUp() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [grade, setGrade] = useState(''); // Added Grade State
+  const [section, setSection] = useState(''); // Added Section State
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function StaffSignUp() {
 
   const handleSignup = async () => {
     // Validation
-    if (!username || !email || !newPassword || !confirmPassword) {
+    if (!username || !email || !grade || !section || !newPassword || !confirmPassword) {
       Toast.show({ type: 'error', text1: 'All fields are required.' });
       return;
     }
@@ -47,6 +49,8 @@ export default function StaffSignUp() {
         uid: user.uid,
         username: username,
         email: email,
+        grade: grade, // Save Grade
+        section: section, // Save Section
         role: 'Teacher',
       });
 
@@ -77,7 +81,7 @@ export default function StaffSignUp() {
       setLoading(false);
     }
   };
-  
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
@@ -104,6 +108,21 @@ export default function StaffSignUp() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+        />
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+          placeholder="Grade (e.g. 10)"
+          placeholderTextColor={colors.placeholder}
+          value={grade}
+          onChangeText={setGrade}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+          placeholder="Section (e.g. A)"
+          placeholderTextColor={colors.placeholder}
+          value={section}
+          onChangeText={setSection}
         />
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}

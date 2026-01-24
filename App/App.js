@@ -23,6 +23,7 @@ import ManageTeachers from './Component/Screens/ManageTeachers';
 import QuickAccess from './Component/Screens/QuickAccess';
 import AttendanceReports from './Component/Screens/AttendanceReports';
 import ClassOverView from './Component/Screens/ClassOverView';
+import EditStudentScreen from './Component/Screens/EditStudentScreen';
 
 
 
@@ -77,6 +78,7 @@ function TeacherAppStack() {
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       <Stack.Screen name="ManageStudent" component={ManageStudent} />
       <Stack.Screen name="ClassOverView" component={ClassOverView} />
+      <Stack.Screen name="EditStudentScreen" component={EditStudentScreen} />
 
 
     </Stack.Navigator>
@@ -98,6 +100,7 @@ function AdminAppStack() {
       <Stack.Screen name="AdminReport" component={AdminReport} />
       <Stack.Screen name="ResetPw" component={ResetPw} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+      <Stack.Screen name="EditStudentScreen" component={EditStudentScreen} />
     </Stack.Navigator>
   );
 }

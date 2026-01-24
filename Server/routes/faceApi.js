@@ -81,12 +81,12 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
 
   try {
     // 1. Get Data (Note: We now accept indexNumber instead of studentId)
-    const { studentName, indexNumber, guardianName, contactNumber, homeAddress } = req.body;
+    const { studentName, indexNumber, guardianName, contactNumber, homeAddress, grade, section } = req.body;
 
     // 2. Validate Required Text Fields
     if (!studentName || !indexNumber) {
-        console.log("❌ Missing Data:", req.body);
-        return res.status(400).json({ message: "Student Name and Index Number are required." });
+      console.log("❌ Missing Data:", req.body);
+      return res.status(400).json({ message: "Student Name and Index Number are required." });
     }
 
     let descriptorArray = [];
@@ -94,26 +94,31 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
 
     // 3. Process Image ONLY if it exists
     if (req.file) {
-        console.log("📸 Processing photo...");
-        const img = await canvas.loadImage(req.file.buffer);
-        const detections = await ssdNet.locateFaces(img);
-        
-        if (detections && detections.length > 0) {
-            const face = detections[0];
-            const landmarks = await landmarkNet.detectLandmarks(img, face);
-            const descriptor = await recognitionNet.computeFaceDescriptor(img, landmarks);
-            descriptorArray = Array.from(descriptor);
-            hasFace = true;
-        } else {
-            console.log("⚠️ Photo uploaded, but NO FACE detected.");
-            // We do NOT return error 400 here anymore. We just save without face data.
-        }
+      console.log("📸 Processing photo...");
+      const img = await canvas.loadImage(req.file.buffer);
+      const detections = await ssdNet.locateFaces(img);
+
+      if (detections && detections.length > 0) {
+        const face = detections[0];
+        const landmarks = await landmarkNet.detectLandmarks(img, face);
+        const descriptor = await recognitionNet.computeFaceDescriptor(img, landmarks);
+        descriptorArray = Array.from(descriptor);
+        hasFace = true;
+      } else {
+        console.log("⚠️ Photo uploaded, but NO FACE detected.");
+        // We do NOT return error 400 here anymore. We just save without face data.
+      }
     }
 
     // 4. Save to Firestore
     await db.collection("students").doc(indexNumber).set({
       studentName: studentName,
-      studentId: studentId,
+      studentId: indexNumber, // Fixed: Using indexNumber as studentId
+      grade: grade || "",
+      section: section || "",
+      guardianName: guardianName,
+      guardianPhone: contactNumber,
+      homeAddress: homeAddress,
       faceDescriptor: Array.from(descriptor),
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -144,35 +149,35 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
     const labeledDescriptors = studentsSnapshot.docs
       .map(doc => {
         const data = doc.data();
-        
+
         // --- THE FIX: Skip students with no face or wrong data length ---
         // A valid face descriptor ALWAYS has 128 numbers.
         if (!data.faceDescriptor || data.faceDescriptor.length !== 128) {
-            return null; 
+          return null;
         }
 
         return new faceapi.LabeledFaceDescriptors(
-            data.studentName, 
-            [new Float32Array(data.faceDescriptor)]
+          data.studentName,
+          [new Float32Array(data.faceDescriptor)]
         );
       })
       .filter(item => item !== null); // Remove the skipped students
 
     // If no one in the database has a face, we can't match anything
     if (labeledDescriptors.length === 0) {
-        return res.status(404).json({ message: "No registered faces found in database." });
+      return res.status(404).json({ message: "No registered faces found in database." });
     }
 
     const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
 
     // 3. Process the Uploaded Image
     const img = await canvas.loadImage(req.file.buffer);
-    
+
     // 1. Detect Face
     const detections = await ssdNet.locateFaces(img);
-    
+
     if (!detections || detections.length === 0) {
-        return res.status(400).json({ message: "No face detected." });
+      return res.status(400).json({ message: "No face detected." });
     }
 
     const face = detections[0];
@@ -183,16 +188,16 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
     const bestMatch = faceMatcher.findBestMatch(descriptor);
 
     if (bestMatch.label === "unknown") {
-        return res.status(404).json({ message: "Face not recognized." });
+      return res.status(404).json({ message: "Face not recognized." });
     }
 
     // 5. Log Attendance
     const studentName = bestMatch.label;
     await db.collection("attendance").add({
-        studentName: studentName,
-        date: new Date().toISOString().split('T')[0],
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        status: "Present"
+      studentName: studentName,
+      date: new Date().toISOString().split('T')[0],
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      status: "Present"
     });
 
     console.log(`📍 Attendance Marked: ${studentName}`);
@@ -208,7 +213,7 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
 router.get("/students", async (req, res) => {
   try {
     const snapshot = await db.collection("students").orderBy("createdAt", "desc").get();
-    
+
     if (snapshot.empty) {
       return res.json([]); // Return empty list if no students
     }
