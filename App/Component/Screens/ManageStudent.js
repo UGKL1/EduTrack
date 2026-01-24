@@ -1,17 +1,19 @@
 import React, { useState, useCallback } from 'react';
-import { 
-  View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, 
-  ActivityIndicator, RefreshControl, Alert, Image 
+import {
+  View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList,
+  ActivityIndicator, RefreshControl, Alert, Image
 } from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
+import useAuth from '../../hooks/useAuth'; // Import Auth Hook
 import axios from 'axios';
 import { API_URL } from '../../config/config'; // Make sure this path is correct
 
 export default function ManageStudent() {
   const navigation = useNavigation();
-  const { colors } = useTheme(); 
+  const { colors } = useTheme();
+  const { user } = useAuth(); // Get user role and details 
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +24,16 @@ export default function ManageStudent() {
   const fetchStudents = async () => {
     try {
       const response = await axios.get(`${API_URL}/students`);
-      setStudents(response.data);
+      let allStudents = response.data;
+
+      // Filter for Teachers
+      if (user?.role === 'Teacher') {
+        allStudents = allStudents.filter(student =>
+          student.grade === user.grade && student.section === user.section
+        );
+      }
+
+      setStudents(allStudents);
     } catch (error) {
       console.error("Fetch Error:", error);
       // Optional: Fail silently or show a small toast, avoiding popup spam
@@ -40,14 +51,17 @@ export default function ManageStudent() {
   );
 
   // --- 3. Filter Logic for Search ---
-  const filteredStudents = students.filter(student => 
+  const filteredStudents = students.filter(student =>
     student.studentName?.toLowerCase().includes(searchText.toLowerCase()) ||
     student.studentId?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   // --- 4. Render Student Card ---
   const renderStudent = ({ item }) => (
-    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+      onPress={() => navigation.navigate('EditStudentScreen', { student: item })}
+    >
       <View style={styles.avatar}>
         <FontAwesome5 name="user-graduate" size={24} color={colors.text} />
       </View>
@@ -56,7 +70,7 @@ export default function ManageStudent() {
         <Text style={[styles.cardSubtitle, { color: colors.placeholder }]}>ID: {item.studentId}</Text>
       </View>
       <Ionicons name="chevron-forward" size={20} color={colors.placeholder} />
-    </View>
+    </TouchableOpacity>
   );
 
   // --- 5. Navigation Tab Component ---
@@ -69,7 +83,7 @@ export default function ManageStudent() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -112,8 +126,8 @@ export default function ManageStudent() {
       )}
 
       {/* FLOATING ADD BUTTON */}
-      <TouchableOpacity 
-        style={[styles.fab, { backgroundColor: '#007AFF' }]} 
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: '#007AFF' }]}
         onPress={() => navigation.navigate('RegisterScreen')}
       >
         <Ionicons name="add" size={32} color="#FFF" />
