@@ -27,15 +27,13 @@
       },
       "edgeToEdgeEnabled": true,
       "versionCode": 1,
-      "permissions": ["android.permission.CAMERA"]
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/edulogo.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "a7b8fb49-375a-47ce-baea-5178fb40f5c7"
-      }
     },
     "plugins": [
       [
@@ -44,6 +42,11 @@
           "cameraPermission": "Allow EduTrack to access your camera to take attendance."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1a292aaa-40f1-41a3-94b6-868c3e568c40"
+      }
+    }
   }
 }
