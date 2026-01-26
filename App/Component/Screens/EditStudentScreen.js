@@ -6,10 +6,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import { API_URL } from '../../config/config';
+import useAuth from '../../hooks/useAuth';
 
 export default function EditStudentScreen({ route, navigation }) {
     // Get student data from navigation params
     const { student } = route.params;
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'Admin';
 
     // --- STATE ---
     const [name, setName] = useState(student.studentName || "");
@@ -33,18 +36,19 @@ export default function EditStudentScreen({ route, navigation }) {
         try {
             const updateData = {
                 studentName: name,
+                studentId: indexNumber, // Include the (potentially new) ID
                 grade: grade,
                 section: section,
                 guardianName: guardianName,
                 guardianPhone: contactNumber,
                 homeAddress: address,
-                // We don't update indexNumber or studentId typically as it's the key, 
-                // but if your backend supports it, you can add it here.
-                // Usually ID is immutable.
             };
 
             console.log("Updating data at:", `${API_URL}/students/${student.studentId}`);
 
+            // Note: If the ID changes, we might need to handle that on the backend
+            // or use the old ID in the URL and the new ID in the body.
+            // Assuming the URL uses the old ID to find the record.
             await axios.put(`${API_URL}/students/${student.studentId}`, updateData);
 
             Alert.alert("Success", "Student Updated Successfully!", [
@@ -90,11 +94,12 @@ export default function EditStudentScreen({ route, navigation }) {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Index Number (Read Only)</Text>
+                        <Text style={styles.label}>Index Number {isAdmin ? "" : "(Read Only)"}</Text>
                         <TextInput
                             value={indexNumber}
-                            editable={false}
-                            style={[styles.input, { opacity: 0.5 }]}
+                            editable={isAdmin}
+                            onChangeText={setIndexNumber}
+                            style={[styles.input, { opacity: isAdmin ? 1 : 0.5 }]}
                         />
                     </View>
 
