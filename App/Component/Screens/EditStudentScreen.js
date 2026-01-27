@@ -64,6 +64,38 @@ export default function EditStudentScreen({ route, navigation }) {
         }
     };
 
+    // --- DELETE FUNCTION ---
+    const handleDelete = () => {
+        Alert.alert(
+            "Delete Student",
+            "Are you sure you want to delete this student? This action cannot be undone.",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        setLoading(true);
+                        try {
+                            console.log(`Deleting student at: ${API_URL}/students/${student.studentId}`);
+                            await axios.delete(`${API_URL}/students/${student.studentId}`);
+
+                            Alert.alert("Deleted", "Student has been removed.", [
+                                { text: "OK", onPress: () => navigation.goBack() }
+                            ]);
+                        } catch (err) {
+                            console.error("Delete Error:", err);
+                            const serverMessage = err.response?.data?.message || "Delete failed.";
+                            Alert.alert("Error", serverMessage);
+                        } finally {
+                            setLoading(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     return (
         <View style={{ flex: 1, backgroundColor: "#0D0D0D" }}>
             {/* Header */}
@@ -171,6 +203,17 @@ export default function EditStudentScreen({ route, navigation }) {
                             <Text style={styles.buttonText}>Update Student</Text>
                         )}
                     </TouchableOpacity>
+
+                    {/* Delete Button (Only for Admins) */}
+                    {isAdmin && (
+                        <TouchableOpacity
+                            onPress={handleDelete}
+                            disabled={loading}
+                            style={[styles.button, { backgroundColor: "#FF3B30", marginTop: 15 }, loading && styles.buttonDisabled]}
+                        >
+                            <Text style={styles.buttonText}>Delete Student</Text>
+                        </TouchableOpacity>
+                    )}
 
                     <View style={{ height: 40 }} />
                 </ScrollView>

@@ -135,8 +135,8 @@ export default function ManageStudent() {
 
       {/* Bottom Navigation */}
       <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
-        <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate('AdminDashboard')} />
-        <TabIcon name="bell" label="Notifications" onPress={() => navigation.navigate('AdminNotificationsScreen')} />
+        <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate(user?.role === 'Admin' ? 'AdminDashboard' : 'Dashboard')} />
+        <TabIcon name="bell" label="Notifications" onPress={() => navigation.navigate(user?.role === 'Admin' ? 'AdminNotificationsScreen' : 'NotificationsScreen')} />
         <TabIcon name="cog" label="Settings" onPress={() => navigation.navigate('SettingsScreen')} />
       </View>
     </View>
