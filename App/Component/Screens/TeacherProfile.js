@@ -18,15 +18,21 @@ export default function TeacherProfile() {
 
   const [isUploading, setIsUploading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  
+  // State for editing
   const [editName, setEditName] = useState("");
   const [editContact, setEditContact] = useState("");
-  const [editClass, setEditClass] = useState("");
+  // CHANGED: Split class into grade and section
+  const [editGrade, setEditGrade] = useState(""); 
+  const [editSection, setEditSection] = useState("");
 
   useEffect(() => {
     if (user) {
       setEditName(user.username || "");
       setEditContact(user.contactNo || "");
-      setEditClass(user.class || "");
+      // CHANGED: Load specific fields
+      setEditGrade(user.grade || "");
+      setEditSection(user.section || "");
     }
   }, [user]);
 
@@ -56,7 +62,7 @@ export default function TeacherProfile() {
       aspect: [1, 1],
       quality: 0.5,
     });
-    if (!result.cancelled) {
+    if (!result.canceled) { // Note: 'cancelled' is deprecated in newer expo versions, usually 'canceled'
       const uri = result.uri ?? result.assets?.[0]?.uri;
       if (uri) uploadImage(uri);
     }
@@ -88,11 +94,17 @@ export default function TeacherProfile() {
     try {
       const collectionName = user.role === "Admin" ? "admins" : "teachers";
       const userDocRef = doc(firestore, collectionName, user.uid);
+      
+      // CHANGED: Save Grade and Section separately
       await updateDoc(userDocRef, {
         username: editName,
         contactNo: editContact,
-        class: editClass,
+        grade: editGrade,
+        section: editSection,
+        // We also save 'class' string for display compatibility
+        class: `${editGrade}-${editSection}`
       });
+      
       setModalVisible(false);
       Alert.alert("Success", "Profile updated!");
     } catch (error) {
@@ -143,7 +155,8 @@ export default function TeacherProfile() {
         <InfoRow label="Staff ID" value={user.staffId || "N/A"} />
         <InfoRow label="Email Address" value={user.email || "N/A"} />
         <InfoRow label="Contact No" value={user.contactNo || "N/A"} />
-        <InfoRow label="Class" value={user.class || "N/A"} />
+        {/* Helper to display class properly */}
+        <InfoRow label="Class" value={user.class || `${user.grade || ''}-${user.section || ''}`} />
         <InfoRow label="Role" value={user.role || "N/A"} />
       </View>
 
@@ -161,6 +174,7 @@ export default function TeacherProfile() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Profile</Text>
+            
             <TextInput
               style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="Full Name"
@@ -168,6 +182,7 @@ export default function TeacherProfile() {
               value={editName}
               onChangeText={setEditName}
             />
+            
             <TextInput
               style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="Contact No"
@@ -176,13 +191,26 @@ export default function TeacherProfile() {
               onChangeText={setEditContact}
               keyboardType="phone-pad"
             />
+            
+            {/* CHANGED: Separate Grade Input */}
             <TextInput
               style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
-              placeholder="Class (e.g., Grade 7-A)"
+              placeholder="Grade (e.g. 10)"
               placeholderTextColor={colors.placeholder}
-              value={editClass}
-              onChangeText={setEditClass}
+              value={editGrade}
+              onChangeText={setEditGrade}
+              keyboardType="numeric"
             />
+
+            {/* CHANGED: Separate Section Input */}
+            <TextInput
+              style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
+              placeholder="Section (e.g. A)"
+              placeholderTextColor={colors.placeholder}
+              value={editSection}
+              onChangeText={setEditSection}
+            />
+
             <View style={styles.modalButtonRow}>
               <TouchableOpacity style={[styles.modalButton, { backgroundColor: colors.subText }]} onPress={() => setModalVisible(false)}>
                 <Text style={styles.modalButtonText}>Cancel</Text>
@@ -287,7 +315,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
