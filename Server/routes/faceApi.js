@@ -111,6 +111,10 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
     }
 
     // 4. Save to Firestore
+    console.log("Saving to Firestore with data:", {
+      studentName, indexNumber, grade, section, guardianName, hasFace, descriptorLength: descriptorArray.length
+    });
+
     await db.collection("students").doc(indexNumber).set({
       studentName: studentName,
       studentId: indexNumber, // Fixed: Using indexNumber as studentId
@@ -119,7 +123,7 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
       guardianName: guardianName,
       guardianPhone: contactNumber,
       homeAddress: homeAddress,
-      faceDescriptor: Array.from(descriptor),
+      faceDescriptor: descriptorArray,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
