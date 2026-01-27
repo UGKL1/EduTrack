@@ -196,7 +196,9 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
     }
 
     // 5. Log Attendance
-    const studentName = bestMatch.label;
+    const fullName = bestMatch.label;
+    const studentName = fullName.split(' ')[0]; // Use only the first name
+
     await db.collection("attendance").add({
       studentName: studentName,
       date: new Date().toISOString().split('T')[0],
