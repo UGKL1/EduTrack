@@ -1,35 +1,64 @@
-import React from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
-
-const adminNotifications = [
-  {
-    id: '1',
-    message: 'Password is successfully reset',
-    time: '2 hrs',
-  },
-  {
-    id: '2',
-    message: 'Mr. R.D.Liyanage added one student to the class',
-    time: '2 hrs',
-  },
-  {
-    id: '3',
-    message: 'Mrs. L.Rathnayake has changed her profile picture',
-    time: '1 d',
-  },
-];
+import { useTheme } from '../../context/ThemeContext';
+// Firebase Imports
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { firestore } from '../../config/firebase';
 
 export default function AdminNotificationsScreen() {
   const navigation = useNavigation();
-  const { colors } = useTheme(); // Use Theme
+  const { colors } = useTheme();
+  
+  // State for dynamic notifications
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // 1. Query the 'admin_notifications' collection, sorted by newest first
+    const q = query(
+      collection(firestore, 'admin_notifications'),
+      orderBy('timestamp', 'desc')
+    );
+
+    // 2. Set up the Real-time Listener
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedNotes = snapshot.docs.map(doc => {
+        const data = doc.data();
+        
+        // Convert Firebase Timestamp to readable string
+        let timeString = 'Just now';
+        if (data.timestamp) {
+          const date = data.timestamp.toDate();
+          // Formats to "10:30 AM" or similar based on locale
+          timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        return { 
+          id: doc.id, 
+          ...data, 
+          time: timeString 
+        };
+      });
+      
+      setNotifications(fetchedNotes);
+      setLoading(false);
+    });
+
+    // Cleanup: Stop listening when screen closes
+    return () => unsubscribe();
+  }, []);
 
   const renderItem = ({ item }) => (
     <View style={styles.notificationItem}>
       <View style={styles.row}>
-        <Ionicons name="notifications-outline" size={20} color={colors.subText} />
+        {/* Dynamic Icon based on type (success checkmark or alert bell) */}
+        <Ionicons 
+          name={item.type === 'success' ? "checkmark-circle" : "notifications-outline"} 
+          size={20} 
+          color={item.type === 'success' ? '#4CAF50' : colors.subText} 
+        />
         <Text style={[styles.message, { color: colors.text }]} numberOfLines={2}>
           {item.message}
         </Text>
@@ -52,13 +81,22 @@ export default function AdminNotificationsScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
       </View>
 
-      {/* Notifications list */}
-      <FlatList
-        data={adminNotifications}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-      />
+      {/* Loading State or List */}
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={notifications}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Text style={{ textAlign: 'center', marginTop: 20, color: colors.subText }}>
+              No notifications yet.
+            </Text>
+          }
+        />
+      )}
     </View>
   );
 }
@@ -101,5 +139,6 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     marginTop: 5,
+    opacity: 0.2 // Slightly faded separator
   },
 });

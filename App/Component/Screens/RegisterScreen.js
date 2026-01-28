@@ -9,6 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import { API_URL } from '../../config/config';
 
+import { sendAdminNotification } from '../../services/notificationService';
+
 // Use your specific API URL
 const BACKEND_API_URL = API_URL;
 
@@ -97,6 +99,24 @@ setContactNumber("");
 setAddress("");
 setImage(null);
 
+      await sendAdminNotification(
+        `New Student Registered: ${name} (Grade ${grade}-${section})`, 
+        'success'
+      );
+
+      Alert.alert("Success", "Student Registered Successfully!", [
+        { text: "OK", onPress: () => navigation.goBack() }
+      ]);
+
+      // Reset Form
+      setName("");
+      setIndexNumber("");
+      setGrade("");
+      setSection("");
+      setGuardianName("");
+      setContactNumber("");
+      setAddress("");
+      setImage(null);
 
     } catch (err) {
       console.error(err);
