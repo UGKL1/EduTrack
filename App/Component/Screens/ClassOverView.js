@@ -8,34 +8,54 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
-  Dimensions
+  ScrollView
 } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../../config/firebase';
 import useAuth from '../../hooks/useAuth';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function ClassOverviewScreen({ navigation }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { user } = useAuth();
   
+  // UI State - Default to 'Daily' or 'Monthly' as you prefer
   const [selectedView, setSelectedView] = useState('Monthly');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Date State
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   
   // Data State
   const [className, setClassName] = useState("Loading...");
   const [teacherName, setTeacherName] = useState("");
   const [studentCount, setStudentCount] = useState(0);
-  
-  // Stats for the Graph
   const [stats, setStats] = useState({
+    Daily: 0,
     Annually: 0,
     Monthly: 0,
     Weekly: 0,
   });
+
+  // --- Date Change Handler ---
+  const onChangeDate = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    if (Platform.OS === 'android') setShowDatePicker(false);
+    setDate(currentDate);
+  };
+
+  // --- Helper: Format Date for Display (DD/MM/YYYY) ---
+  const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+
+  // --- Helper: Format Date for DB Query (YYYY-MM-DD) ---
+  // Using local time components to avoid timezone shifts
+  const queryDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
   // --- 1. Main Data Fetch Function ---
   const fetchClassData = async () => {
@@ -44,12 +64,10 @@ export default function ClassOverviewScreen({ navigation }) {
 
     try {
       // STEP A: Force Fetch Fresh Teacher Profile
-      // (This fixes the "Not Assigned" bug by getting the latest data directly from DB)
       const userRef = doc(firestore, 'teachers', user.uid);
       const userSnap = await getDoc(userRef);
       
       if (!userSnap.exists()) {
-        console.log("Teacher profile not found");
         setLoading(false);
         return;
       }
@@ -60,7 +78,6 @@ export default function ClassOverviewScreen({ navigation }) {
       
       setTeacherName(freshData.username || "Unknown");
 
-      // Check if Grade/Section exists
       if (!targetGrade || !targetSection) {
         setClassName("Not Assigned");
         setLoading(false);
@@ -82,7 +99,7 @@ export default function ClassOverviewScreen({ navigation }) {
       setStudentCount(totalStudents);
 
       if (totalStudents === 0) {
-        setStats({ Annually: 0, Monthly: 0, Weekly: 0 });
+        setStats({ Daily: 0, Annually: 0, Monthly: 0, Weekly: 0 });
         setLoading(false);
         return;
       }
@@ -91,24 +108,29 @@ export default function ClassOverviewScreen({ navigation }) {
       const attQuery = query(collection(firestore, 'attendance'), orderBy('timestamp', 'desc'));
       const attSnapshot = await getDocs(attQuery);
       
-      const now = new Date();
+      const now = new Date(date); // Reference point is Selected Date
       const oneWeekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-      // Get valid student names for this class
       const classStudentNames = new Set(studentSnapshot.docs.map(doc => doc.data().studentName));
       
+      let presentDay = 0;
       let presentYear = 0, presentMonth = 0, presentWeek = 0;
       const daysYear = new Set(), daysMonth = new Set(), daysWeek = new Set();
 
       attSnapshot.forEach(doc => {
         const data = doc.data();
-        // Only process if student belongs to this class
         if (classStudentNames.has(data.studentName)) {
           const rDate = new Date(data.date);
           
-          if (rDate >= startOfYear) {
+          // 1. Daily Calc (Exact Match String)
+          if (data.date === queryDateStr) {
+            presentDay++;
+          }
+
+          // 2. Range Calcs (Relative to selected date)
+          if (rDate <= now && rDate >= startOfYear) {
             presentYear++;
             daysYear.add(data.date);
             
@@ -124,14 +146,15 @@ export default function ClassOverviewScreen({ navigation }) {
         }
       });
 
-      // Helper to calculate %
-      const calc = (present, days) => {
-        if (days === 0 || totalStudents === 0) return 0;
-        const result = (present / (totalStudents * days)) * 100;
-        return result > 100 ? 100 : result; // Cap at 100
+      // Percentage Calculation Helper
+      const calc = (present, denominator) => {
+        if (denominator === 0 || totalStudents === 0) return 0;
+        let val = (present / (totalStudents * denominator)) * 100;
+        return val > 100 ? 100 : val;
       };
 
       setStats({
+        Daily: calc(presentDay, 1), // Denominator is 1 day
         Annually: calc(presentYear, daysYear.size),
         Monthly: calc(presentMonth, daysMonth.size),
         Weekly: calc(presentWeek, daysWeek.size),
@@ -148,10 +171,18 @@ export default function ClassOverviewScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       fetchClassData();
-    }, [user])
+    }, [user, date])
   );
 
-  // --- Custom Bar Component for Graph ---
+  // --- Dynamic Label Logic ---
+  const getStatsLabel = () => {
+    if (selectedView === 'Daily') {
+      return `Average Attendance as at ${formattedDate}`;
+    }
+    return `${selectedView} Average Attendance`;
+  };
+
+  // --- Custom Bar Component ---
   const Bar = ({ label, percentage }) => (
     <View style={styles.barContainer}>
       <Text style={[styles.barLabel, { color: colors.subText }]}>{label}</Text>
@@ -170,12 +201,21 @@ export default function ClassOverviewScreen({ navigation }) {
     </View>
   );
 
+  // --- Helper Button ---
+  const CustomButton = ({ title, icon, onPress }) => (
+    <TouchableOpacity style={styles.actionButton} onPress={onPress}>
+      <Text style={styles.actionText}>{title}</Text>
+      <FontAwesome5 name={icon} size={18} color="white" style={{ marginLeft: 10 }} />
+    </TouchableOpacity>
+  );
+
+  const options = ['Daily', 'Weekly', 'Monthly', 'Annually'];
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top', 'left', 'right']}
     >
-      {/* Header with Back Button */}
       <View style={styles.topHeader}>
         <TouchableOpacity onPress={() => navigation.navigate('Dashboard')} style={styles.backButton}>
           <FontAwesome5 name="arrow-left" size={20} color={colors.text} />
@@ -190,7 +230,7 @@ export default function ClassOverviewScreen({ navigation }) {
           <Text style={{ marginTop: 10, color: colors.subText }}>Analyzing Attendance...</Text>
         </View>
       ) : (
-        <View style={styles.content}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           
           {/* 1. Class Info Card */}
           <View style={[styles.card, { backgroundColor: colors.card }]}>
@@ -203,6 +243,14 @@ export default function ClassOverviewScreen({ navigation }) {
             </View>
             <View style={styles.divider} />
             <View style={styles.cardRow}>
+              <FontAwesome5 name="user-tie" size={24} color={colors.primary} style={styles.icon} />
+              <View>
+                <Text style={[styles.cardLabel, { color: colors.subText }]}>Class Teacher</Text>
+                <Text style={[styles.cardValue, { color: colors.text }]}>{teacherName}</Text>
+              </View>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.cardRow}>
               <FontAwesome5 name="user-graduate" size={24} color={colors.primary} style={styles.icon} />
               <View>
                 <Text style={[styles.cardLabel, { color: colors.subText }]}>Students</Text>
@@ -211,42 +259,77 @@ export default function ClassOverviewScreen({ navigation }) {
             </View>
           </View>
 
-          {/* 2. Visual Graph Section */}
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Performance Graph</Text>
+          {/* Controls Row */}
+          <Text style={[styles.label, { color: colors.subText, marginTop: 10 }]}>Attendance Filters :</Text>
+          <View style={styles.controlsRow}>
+            {/* DATE PICKER */}
+            <TouchableOpacity 
+              style={[styles.controlBox, { backgroundColor: colors.card, marginRight: 10 }]}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <FontAwesome5 name="calendar-alt" size={16} color={colors.primary} style={{ marginRight: 8 }} />
+              <Text style={{ color: colors.text, fontWeight: '600' }}>{formattedDate}</Text>
+            </TouchableOpacity>
+
+            {/* DROPDOWN */}
+            <View style={{ flex: 1, zIndex: 1000 }}>
+              <TouchableOpacity 
+                style={[styles.controlBox, { backgroundColor: colors.card, justifyContent: 'space-between' }]}
+                onPress={() => setDropdownOpen(!dropdownOpen)}
+              >
+                <Text style={{ color: colors.text, fontWeight: '600' }}>{selectedView}</Text>
+                <Ionicons name={dropdownOpen ? "chevron-up" : "chevron-down"} size={16} color={colors.subText} />
+              </TouchableOpacity>
+
+              {dropdownOpen && (
+                <View style={[styles.dropdownList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  {options.map((opt, index) => (
+                    <TouchableOpacity 
+                      key={opt}
+                      style={[
+                        styles.dropdownItem, 
+                        index !== options.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }
+                      ]}
+                      onPress={() => {
+                        setSelectedView(opt);
+                        setDropdownOpen(false);
+                      }}
+                    >
+                      <Text style={{ color: colors.text }}>{opt}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={onChangeDate}
+              themeVariant={isDark ? 'dark' : 'light'}
+            />
+          )}
+
+          {/* 2. Graph Section */}
+          <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 20 }]}>Performance Graph</Text>
           <View style={[styles.graphCard, { backgroundColor: colors.card }]}>
+            {/* Show Daily on graph too if you like, or stick to trends */}
+            <Bar label="Daily" percentage={stats.Daily} />
             <Bar label="Weekly" percentage={stats.Weekly} />
             <Bar label="Monthly" percentage={stats.Monthly} />
-            <Bar label="Annual" percentage={stats.Annually} />
           </View>
 
-          {/* 3. Big Percentage Display */}
-          <View style={styles.toggleRow}>
-            {['Weekly', 'Monthly', 'Annually'].map((view) => (
-              <TouchableOpacity
-                key={view}
-                onPress={() => setSelectedView(view)}
-                style={[
-                  styles.pill,
-                  selectedView === view && { backgroundColor: colors.primary }
-                ]}
-              >
-                <Text style={[
-                  styles.pillText, 
-                  selectedView === view ? { color: '#fff' } : { color: colors.text }
-                ]}>
-                  {view}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <View style={styles.bigStat}>
-            <Text style={[styles.bigStatValue, { color: colors.primary }]}>
-              {stats[selectedView].toFixed(1)}%
-            </Text>
-            <Text style={[styles.bigStatLabel, { color: colors.subText }]}>
-              Average Attendance
-            </Text>
+          {/* 3. Big Percentage Display (Dynamic Label) */}
+          <View style={[styles.statsBox, { borderColor: '#8FBC8F', marginTop: 10 }]}> 
+              <Text style={[styles.statsTitle, { color: colors.subText }]}>
+                {getStatsLabel()}
+              </Text>
+              <Text style={[styles.statsValue, { color: colors.text }]}>
+                {stats[selectedView].toFixed(2)}%
+              </Text>
           </View>
 
           {/* 4. Action Buttons */}
@@ -268,7 +351,16 @@ export default function ClassOverviewScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-        </View>
+          <TouchableOpacity 
+            style={[styles.fullWidthBtn, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.subText }]}
+            onPress={() => navigation.navigate('TeacherProfile')}
+          >
+            <FontAwesome5 name="user-cog" size={18} color={colors.text} />
+            <Text style={[styles.actionBtnText, { color: colors.text }]}>View Teacher Profile</Text>
+          </TouchableOpacity>
+
+          <View style={{ height: 100 }} /> 
+        </ScrollView>
       )}
 
       {/* Bottom Nav */}
@@ -347,6 +439,37 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(150,150,150,0.2)',
     marginVertical: 15,
   },
+  label: {
+    fontSize: 14,
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  controlsRow: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    zIndex: 2000, 
+  },
+  controlBox: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 10,
+    height: 50,
+  },
+  dropdownList: {
+    position: 'absolute',
+    top: 55,
+    left: 0,
+    right: 0,
+    borderRadius: 8,
+    borderWidth: 0.5,
+    elevation: 5,
+    zIndex: 3000,
+  },
+  dropdownItem: {
+    padding: 15,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -384,37 +507,28 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'right',
   },
-  toggleRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 15,
-    gap: 10,
-  },
-  pill: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: 'rgba(150,150,150,0.1)',
-  },
-  pillText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  bigStat: {
+  statsBox: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 25,
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
   },
-  bigStatValue: {
-    fontSize: 42,
-    fontWeight: 'bold',
-  },
-  bigStatLabel: {
+  statsTitle: {
     fontSize: 14,
+    marginBottom: 8,
+    textAlign: 'center'
+  },
+  statsValue: {
+    fontSize: 36,
+    fontWeight: 'bold',
   },
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 15,
+    marginBottom: 15,
   },
   actionBtn: {
     flex: 1,
@@ -425,8 +539,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 10,
   },
+  fullWidthBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    borderRadius: 12,
+    gap: 10,
+    width: '100%',
+  },
   actionBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
