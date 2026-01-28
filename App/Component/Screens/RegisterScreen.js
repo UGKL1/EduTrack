@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { notifyStudentRegistered } from './NotificationHelper';
 import {
   View, Text, TextInput, TouchableOpacity, Alert,
   ActivityIndicator, ScrollView, StyleSheet, Platform, KeyboardAvoidingView
@@ -76,22 +77,26 @@ export default function RegisterScreen({ navigation }) {
       console.log("Sending data to:", `${BACKEND_API_URL}/enroll-student`);
 
       await axios.post(`${BACKEND_API_URL}/enroll-student`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  headers: { "Content-Type": "multipart/form-data" },
+});
 
-      Alert.alert("Success", "Student Registered Successfully!", [
-        { text: "OK", onPress: () => navigation.goBack() }
-      ]);
+// 🔔 Add Firestore notification
+await notifyStudentRegistered(name);
 
-      // Reset Form
-      setName("");
-      setIndexNumber("");
-      setGrade("");
-      setSection("");
-      setGuardianName("");
-      setContactNumber("");
-      setAddress("");
-      setImage(null);
+Alert.alert("Success", "Student Registered Successfully!", [
+  { text: "OK", onPress: () => navigation.navigate("Notifications") }
+]);
+
+// Reset Form
+setName("");
+setIndexNumber("");
+setGrade("");
+setSection("");
+setGuardianName("");
+setContactNumber("");
+setAddress("");
+setImage(null);
+
 
     } catch (err) {
       console.error(err);
