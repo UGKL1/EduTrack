@@ -8,6 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import { API_URL } from '../../config/config';
 
+import { sendAdminNotification } from '../../services/notificationService';
+
 // Use your specific API URL
 const BACKEND_API_URL = API_URL;
 
@@ -78,6 +80,11 @@ export default function RegisterScreen({ navigation }) {
       await axios.post(`${BACKEND_API_URL}/enroll-student`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
+      await sendAdminNotification(
+        `New Student Registered: ${name} (Grade ${grade}-${section})`, 
+        'success'
+      );
 
       Alert.alert("Success", "Student Registered Successfully!", [
         { text: "OK", onPress: () => navigation.goBack() }
