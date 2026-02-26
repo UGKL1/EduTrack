@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator,
+  StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator, SafeAreaView,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
@@ -15,7 +15,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const navigation = useNavigation();
   const { colors } = useTheme();
 
@@ -24,11 +24,16 @@ export default function Login() {
       Toast.show({ type: 'error', text1: 'Email and password are required.' });
       return;
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Toast.show({ type: 'error', text1: 'Please enter a valid email address.' });
+      return;
+    }
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const userDocRef = doc(firestore, 'teachers', user.uid); 
+      const userDocRef = doc(firestore, 'teachers', user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
@@ -51,9 +56,9 @@ export default function Login() {
       setLoading(false);
     }
   };
-  
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <TouchableOpacity
         style={styles.backArrow}
         onPress={() => navigation.navigate('SignupOrLogin')}
@@ -111,7 +116,7 @@ export default function Login() {
           <Text style={styles.buttonText}>Back to Sign up</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

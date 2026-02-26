@@ -18,12 +18,12 @@ export default function TeacherProfile() {
 
   const [isUploading, setIsUploading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   // State for editing
   const [editName, setEditName] = useState("");
   const [editContact, setEditContact] = useState("");
   // CHANGED: Split class into grade and section
-  const [editGrade, setEditGrade] = useState(""); 
+  const [editGrade, setEditGrade] = useState("");
   const [editSection, setEditSection] = useState("");
 
   useEffect(() => {
@@ -62,8 +62,8 @@ export default function TeacherProfile() {
       aspect: [1, 1],
       quality: 0.5,
     });
-    if (!result.canceled) { // Note: 'cancelled' is deprecated in newer expo versions, usually 'canceled'
-      const uri = result.uri ?? result.assets?.[0]?.uri;
+    if (!result.canceled) {
+      const uri = result.assets?.[0]?.uri;
       if (uri) uploadImage(uri);
     }
   };
@@ -94,7 +94,7 @@ export default function TeacherProfile() {
     try {
       const collectionName = user.role === "Admin" ? "admins" : "teachers";
       const userDocRef = doc(firestore, collectionName, user.uid);
-      
+
       // CHANGED: Save Grade and Section separately
       await updateDoc(userDocRef, {
         username: editName,
@@ -104,7 +104,7 @@ export default function TeacherProfile() {
         // We also save 'class' string for display compatibility
         class: `${editGrade}-${editSection}`
       });
-      
+
       setModalVisible(false);
       Alert.alert("Success", "Profile updated!");
     } catch (error) {
@@ -165,8 +165,8 @@ export default function TeacherProfile() {
       </TouchableOpacity>
 
       <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
-        <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate("Dashboard")} />
-        <TabIcon name="notifications" label="Notifications" onPress={() => navigation.navigate("NotificationsScreen")}/>
+        <TabIcon name="home" label="Dashboard" onPress={() => navigation.navigate(user?.role === 'Admin' ? 'AdminDashboard' : 'Dashboard')} />
+        <TabIcon name="notifications" label="Notifications" onPress={() => navigation.navigate(user?.role === 'Admin' ? 'AdminNotificationsScreen' : 'NotificationsScreen')} />
         <TabIcon name="settings" label="Settings" onPress={() => navigation.navigate("SettingsScreen")} />
       </View>
 
@@ -174,7 +174,7 @@ export default function TeacherProfile() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Profile</Text>
-            
+
             <TextInput
               style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="Full Name"
@@ -182,7 +182,7 @@ export default function TeacherProfile() {
               value={editName}
               onChangeText={setEditName}
             />
-            
+
             <TextInput
               style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="Contact No"
@@ -191,7 +191,7 @@ export default function TeacherProfile() {
               onChangeText={setEditContact}
               keyboardType="phone-pad"
             />
-            
+
             {/* CHANGED: Separate Grade Input */}
             <TextInput
               style={[styles.modalInput, { backgroundColor: colors.background, color: colors.text }]}

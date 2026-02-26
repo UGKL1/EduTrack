@@ -68,8 +68,8 @@ export default function AttendanceScreen({ navigation }) {
         quality: 0.7,
       });
 
-      if (result.cancelled === true) return;
-      
+      if (result.canceled === true) return;
+
       const uri = result.uri ?? result.assets?.[0]?.uri;
       if (!uri) return;
 
@@ -88,7 +88,7 @@ export default function AttendanceScreen({ navigation }) {
     try {
       const formData = new FormData();
       const uriParts = uri.split(".");
-      const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0]; 
+      const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0];
       const filename = `photo.${fileType}`;
 
       formData.append("faceImage", {
@@ -109,9 +109,9 @@ export default function AttendanceScreen({ navigation }) {
       // ✅ UPDATE: Combine the message and the student name
       const serverMsg = res.data?.message || "Attendance Marked";
       const studentName = res.data?.student || ""; // Get student name from backend
-      
-      const displayMessage = studentName 
-        ? `${serverMsg}\n👤 ${studentName}` 
+
+      const displayMessage = studentName
+        ? `${serverMsg}\n👤 ${studentName}`
         : serverMsg;
 
       setScanResult({

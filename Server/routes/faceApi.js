@@ -196,8 +196,7 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
     }
 
     // 5. Log Attendance
-    const fullName = bestMatch.label;
-    const studentName = fullName.split(' ')[0]; // Use only the first name
+    const studentName = bestMatch.label; // Use full name for proper record-keeping
 
     await db.collection("attendance").add({
       studentName: studentName,
@@ -238,17 +237,6 @@ router.get("/students", async (req, res) => {
 
 // --- 7. MANAGE STUDENTS ROUTES ---
 
-// GET All Students
-router.get("/students", async (req, res) => {
-  try {
-    const snapshot = await db.collection("students").get();
-    const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(students);
-  } catch (error) {
-    console.error("Fetch Students Error:", error);
-    res.status(500).json({ message: "Failed to fetch students" });
-  }
-});
 
 // PUT Update Student
 router.put("/students/:id", async (req, res) => {

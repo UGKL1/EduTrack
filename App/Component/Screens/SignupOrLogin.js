@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Image, Text, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, Image, Text, View, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -8,7 +8,7 @@ export default function SignupOrLogin() {
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -27,14 +27,14 @@ export default function SignupOrLogin() {
 
         <Text style={[styles.subText, { color: colors.subText }]}>Don’t have an account?</Text>
 
-       <TouchableOpacity
+        <TouchableOpacity
           style={styles.buttonAlt}
-          onPress={() => navigation.navigate('StaffSignUp')} 
+          onPress={() => navigation.navigate('StaffSignUp')}
         >
           <Text style={styles.buttonText}>Sign up</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 100, 
+    marginTop: 100,
   },
   logo: {
     width: 200,
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
-    marginTop: 170, 
+    marginTop: 170,
   },
   button: {
     backgroundColor: '#007BFF',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, SafeAreaView } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { auth, firestore } from '../../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -13,7 +13,9 @@ export default function Dashboard({ navigation }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userId = auth.currentUser.uid;
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+        const userId = currentUser.uid;
         const userDocRef = doc(firestore, 'teachers', userId);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
@@ -37,7 +39,7 @@ export default function Dashboard({ navigation }) {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.profileCard, { backgroundColor: colors.card }]}>
         <Text style={[styles.profileHeader, { color: colors.text }]}>Dashboard</Text>
         <Image
@@ -85,7 +87,7 @@ export default function Dashboard({ navigation }) {
           <Text style={[styles.navText, { color: colors.text }]}>Settings</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

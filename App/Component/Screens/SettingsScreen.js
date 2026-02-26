@@ -1,6 +1,6 @@
 // Component/Screens/SettingsScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView, Linking, Alert } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -83,13 +83,26 @@ export default function SettingsScreen({ navigation }) {
     };
 
     const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            Toast.show({ type: 'success', text1: 'Logged out successfully.' });
-        } catch (error) {
-            console.log('Logout Error:', error.message);
-            Toast.show({ type: 'error', text1: 'Failed to log out.' });
-        }
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to log out?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Logout',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await signOut(auth);
+                            Toast.show({ type: 'success', text1: 'Logged out successfully.' });
+                        } catch (error) {
+                            console.log('Logout Error:', error.message);
+                            Toast.show({ type: 'error', text1: 'Failed to log out.' });
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     // Helper component for Radio Button Options
@@ -137,7 +150,7 @@ export default function SettingsScreen({ navigation }) {
                         <View>
                             <Text style={[styles.settingText, { color: colors.text }]}>Enable/Disable Notifications</Text>
                             <Text style={[styles.subtitleText, { color: colors.subText }]}>
-                                Switch system notifications recivive from the app
+                                Toggle system notifications received from the app
                             </Text>
                         </View>
                         <Switch
@@ -167,7 +180,14 @@ export default function SettingsScreen({ navigation }) {
                         <Text style={[styles.settingText, { color: colors.text }]}>Logout</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.settingItem, { borderBottomColor: 'transparent' }]}>
+                    <TouchableOpacity
+                        style={[styles.settingItem, { borderBottomColor: 'transparent' }]}
+                        onPress={() => Alert.alert(
+                            'Remove Account',
+                            'Removing your account will permanently delete all your data. Please contact support at edutrack123@gmail.com to proceed.',
+                            [{ text: 'OK' }]
+                        )}
+                    >
                         <Text style={[styles.settingText, { color: 'red' }]}>Remove Account</Text>
                     </TouchableOpacity>
                 </View>
