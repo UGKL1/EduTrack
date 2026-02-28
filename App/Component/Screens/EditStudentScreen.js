@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
-import { API_URL } from '../../config/config';
+import useApiUrl from '../../hooks/useApiUrl';
 import useAuth from '../../hooks/useAuth';
 
 export default function EditStudentScreen({ route, navigation }) {
@@ -13,6 +13,7 @@ export default function EditStudentScreen({ route, navigation }) {
     const { student } = route.params;
     const { user } = useAuth();
     const isAdmin = user?.role === 'Admin';
+    const { apiUrl: API_URL, loadingUrl } = useApiUrl();
 
     // --- STATE ---
     const [name, setName] = useState(student.studentName || "");
@@ -27,6 +28,11 @@ export default function EditStudentScreen({ route, navigation }) {
 
     // --- UPDATE FUNCTION ---
     const handleUpdate = async () => {
+        if (loadingUrl) {
+            Alert.alert("Connecting", "Please wait while connecting to the server...");
+            return;
+        }
+
         // 🚨 VALIDATION CHECK
         if (!name || !indexNumber || !grade || !section || !guardianName || !contactNumber || !address) {
             return Alert.alert("Missing Data", "All fields are required.");
@@ -66,6 +72,11 @@ export default function EditStudentScreen({ route, navigation }) {
 
     // --- DELETE FUNCTION ---
     const handleDelete = () => {
+        if (loadingUrl) {
+            Alert.alert("Connecting", "Please wait while connecting to the server...");
+            return;
+        }
+
         Alert.alert(
             "Delete Student",
             "Are you sure you want to delete this student? This action cannot be undone.",

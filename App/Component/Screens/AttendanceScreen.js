@@ -7,11 +7,10 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useTheme } from '../../context/ThemeContext';
-import { API_URL } from '../../config/config';
-
-const BACKEND_API_URL = API_URL;
+import useApiUrl from '../../hooks/useApiUrl';
 
 export default function AttendanceScreen({ navigation }) {
+  const { apiUrl: BACKEND_API_URL, loadingUrl } = useApiUrl();
   const { colors } = useTheme(); // Use Theme// Use Theme
   const [permissionState, setPermissionState] = useState(null); // null | "granted" | "denied"
   const [isLoading, setIsLoading] = useState(false);
@@ -82,6 +81,10 @@ export default function AttendanceScreen({ navigation }) {
   };
 
   const uploadImage = async (uri) => {
+    if (loadingUrl) {
+      Alert.alert("Connecting", "Please wait while connecting to the server...");
+      return;
+    }
     setIsLoading(true);
     setScanResult(null);
 

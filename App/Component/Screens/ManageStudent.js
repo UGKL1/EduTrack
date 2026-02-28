@@ -8,12 +8,13 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 import useAuth from '../../hooks/useAuth'; // Import Auth Hook
 import axios from 'axios';
-import { API_URL } from '../../config/config'; // Make sure this path is correct
+import useApiUrl from '../../hooks/useApiUrl';
 
 export default function ManageStudent() {
   const navigation = useNavigation();
   const { colors } = useTheme();
   const { user } = useAuth(); // Get user role and details 
+  const { apiUrl: API_URL, loadingUrl } = useApiUrl();
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,8 @@ export default function ManageStudent() {
 
   // --- 1. Fetch Students from Server ---
   const fetchStudents = async () => {
+    if (loadingUrl) return; // Wait until API_URL resolves
+
     try {
       const response = await axios.get(`${API_URL}/students`);
       let allStudents = response.data;
@@ -43,11 +46,11 @@ export default function ManageStudent() {
     }
   };
 
-  // --- 2. Auto-Reload when screen opens/returns ---
+  // --- 2. Auto-Reload when screen opens/returns or URL updates ---
   useFocusEffect(
     useCallback(() => {
       fetchStudents();
-    }, [])
+    }, [API_URL, loadingUrl])
   );
 
   // --- 3. Filter Logic for Search ---

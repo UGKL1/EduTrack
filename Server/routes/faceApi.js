@@ -7,15 +7,24 @@ const fs = require("fs");
 const admin = require("firebase-admin");
 
 // --- 1. SETUP FIREBASE ADMIN ---
-// We use a try-catch block to debug the key file specifically
 try {
-  const serviceAccountPath = path.join(__dirname, "../serviceAccountKey.json");
+  let serviceAccount;
 
-  if (!fs.existsSync(serviceAccountPath)) {
-    throw new Error(`File not found at: ${serviceAccountPath}`);
+  // Check if we are in production (Render) with a base64 encoded environment variable
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+    console.log("🔒 Loading Firebase credentials from environment variable...");
+    const decodedKey = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
+    serviceAccount = JSON.parse(decodedKey);
+  } else {
+    // Fallback to local file for development
+    console.log("📂 Loading Firebase credentials from local file...");
+    const serviceAccountPath = path.join(__dirname, "../serviceAccountKey.json");
+
+    if (!fs.existsSync(serviceAccountPath)) {
+      throw new Error(`File not found at: ${serviceAccountPath}`);
+    }
+    serviceAccount = require(serviceAccountPath);
   }
-
-  const serviceAccount = require(serviceAccountPath);
 
   // Initialize Firebase (only if not already running)
   if (!admin.apps.length) {

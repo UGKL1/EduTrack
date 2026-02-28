@@ -7,14 +7,12 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
-import { API_URL } from '../../config/config';
+import useApiUrl from '../../hooks/useApiUrl';
 
 import { sendAdminNotification } from '../../services/notificationService';
 
-// Use your specific API URL
-const BACKEND_API_URL = API_URL;
-
 export default function RegisterScreen({ navigation }) {
+  const { apiUrl: BACKEND_API_URL, loadingUrl } = useApiUrl();
   // --- STATE ---
   const [name, setName] = useState("");
   const [indexNumber, setIndexNumber] = useState("");
@@ -47,6 +45,11 @@ export default function RegisterScreen({ navigation }) {
 
   // --- 2. REGISTER FUNCTION (Now Checks ALL Fields) ---
   const handleRegister = async () => {
+    if (loadingUrl) {
+      Alert.alert("Connecting", "Please wait while connecting to the server...");
+      return;
+    }
+
     // 🚨 VALIDATION CHECK: All text fields are now REQUIRED
     if (!name || !indexNumber || !grade || !section || !guardianName || !contactNumber || !address || !image) {
       return Alert.alert("Missing Data", "All fields (Name, Index, Grade, Section, Guardian, Contact, Address) are required.");
