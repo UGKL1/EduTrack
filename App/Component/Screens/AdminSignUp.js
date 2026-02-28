@@ -1,6 +1,7 @@
 // Component/Screens/AdminSignUp.js
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator,
 } from 'react-native';
@@ -16,6 +17,8 @@ export default function AdminSignUp() {
   const [adminID, setAdminID] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
@@ -44,7 +47,7 @@ export default function AdminSignUp() {
       const user = userCredential.user;
 
       // Save user role and info to 'admins' collection
-      await setDoc(doc(firestore, 'admins', user.uid), { 
+      await setDoc(doc(firestore, 'admins', user.uid), {
         uid: user.uid,
         username: username,
         email: email,
@@ -60,7 +63,7 @@ export default function AdminSignUp() {
       });
 
       // Navigate to Admin login screen
-      navigation.navigate('Admin'); 
+      navigation.navigate('Admin');
 
     } catch (error) {
       // Handle errors
@@ -79,7 +82,7 @@ export default function AdminSignUp() {
       setLoading(false);
     }
   };
-  
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
@@ -114,22 +117,38 @@ export default function AdminSignUp() {
           value={adminID}
           onChangeText={setAdminID}
         />
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="New Password"
-          placeholderTextColor={colors.placeholder}
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="Confirm Password"
-          placeholderTextColor={colors.placeholder}
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="New Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showNewPassword}
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowNewPassword(!showNewPassword)}
+          >
+            <Ionicons name={showNewPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="Confirm Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={styles.button}
@@ -172,6 +191,19 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
+  },
+  passwordContainer: {
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  passwordInput: {
+    padding: 12,
+    borderRadius: 8,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
   },
   button: {
     backgroundColor: '#007BFF',

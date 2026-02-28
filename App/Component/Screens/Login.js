@@ -13,6 +13,7 @@ import { useTheme } from '../../context/ThemeContext';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -80,14 +81,22 @@ export default function Login() {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="Password"
-          placeholderTextColor={colors.placeholder}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.row}>
           <TouchableOpacity
@@ -141,6 +150,19 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
+  },
+  passwordContainer: {
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  passwordInput: {
+    padding: 12,
+    borderRadius: 8,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
   },
   row: {
     flexDirection: 'row',

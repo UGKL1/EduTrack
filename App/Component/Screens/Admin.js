@@ -13,6 +13,7 @@ import { useTheme } from '../../context/ThemeContext';
 export default function Admin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
@@ -43,16 +44,16 @@ export default function Admin() {
       setLoading(false);
     }
   };
-  
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <TouchableOpacity
-          style={styles.backArrow}
-          onPress={() => navigation.navigate('Login')}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-      
+      <TouchableOpacity
+        style={styles.backArrow}
+        onPress={() => navigation.navigate('Login')}
+      >
+        <Ionicons name="arrow-back" size={24} color={colors.text} />
+      </TouchableOpacity>
+
       <View style={styles.logoContainer}>
         <Image source={require('../../assets/edulogo.png')} style={styles.logo} resizeMode="contain" />
       </View>
@@ -67,14 +68,22 @@ export default function Admin() {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="Password"
-          placeholderTextColor={colors.placeholder}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.row}>
           <TouchableOpacity
@@ -124,6 +133,19 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
+  },
+  passwordContainer: {
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  passwordInput: {
+    padding: 12,
+    borderRadius: 8,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
   },
   row: {
     flexDirection: 'row',

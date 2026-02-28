@@ -210,7 +210,7 @@ export default function RegisterScreen({ navigation }) {
           </View>
 
           {/* Section: Biometric Data */}
-          <Text style={styles.sectionHeader}>Biometric Data (Optional)</Text>
+          <Text style={styles.sectionHeader}>Scan Face</Text>
 
           <TouchableOpacity onPress={pickImage} style={[styles.cameraBox, image && styles.cameraBoxSuccess]}>
             {image ? (
