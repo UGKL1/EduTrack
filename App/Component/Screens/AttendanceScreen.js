@@ -105,7 +105,7 @@ export default function AttendanceScreen({ navigation }) {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-          timeout: 25000,
+          timeout: 60000,
         }
       );
 
