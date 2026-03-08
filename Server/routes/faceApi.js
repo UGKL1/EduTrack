@@ -66,14 +66,11 @@ async function loadModels() {
 
   try {
     // Load weights directly into memory
-    await ssdNet.loadFromDisk(modelPath);
-    await landmarkNet.loadFromDisk(modelPath);
-    await recognitionNet.loadFromDisk(modelPath);
+    await faceapi.nets.ssdMobilenetv1.loadFromDisk(modelPath);
+await faceapi.nets.faceLandmark68Net.loadFromDisk(modelPath);
+await faceapi.nets.faceRecognitionNet.loadFromDisk(modelPath);
 
-    // Verify loading
-    if (!landmarkNet.params) {
-      throw new Error("LandmarkNet failed to load weights.");
-    }
+    
 
     modelsLoaded = true;
     console.log("✅ SYSTEM READY: AI Models loaded.");
@@ -98,29 +95,26 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
       return res.status(400).json({ message: "Student Name and Index Number are required." });
     }
 
-    let descriptorArray = [];
-    let hasFace = false;
+let descriptorArray = [];
+let hasFace = false;
 
-    // 3. Process Image ONLY if it exists
-    if (req.file) {
-      console.log("📸 Processing photo...");
-      const img = await canvas.loadImage(req.file.buffer);
-      const detections = await ssdNet.locateFaces(img);
+// 3. Process Image ONLY if it exists
+if (req.file) {
+  console.log("📸 Processing photo...");
+  const img = await canvas.loadImage(req.file.buffer);
+  const detection = await faceapi
+    .detectSingleFace(img)
+    .withFaceLandmarks()
+    .withFaceDescriptor();
 
-      if (detections && detections.length > 0) {
-        const face = detections[0];
-        const landmarks = await landmarkNet.detectLandmarks(img, face);
-        const descriptor = await recognitionNet.computeFaceDescriptor(img, landmarks);
-        descriptorArray = Array.from(descriptor);
-        hasFace = true;
-      } else {
-        console.log("⚠️ Photo uploaded, but NO FACE detected.");
-        // We do NOT return error 400 here anymore. We just save without face data.
-      }
-    }
+  if (detection) {
+    descriptorArray = Array.from(detection.descriptor);
+    hasFace = true;
+  }
+}
 
-    // 4. Save to Firestore
-    console.log("Saving to Firestore with data:", {
+// 4. Save to Firestore
+console.log("Saving to Firestore with data:", {
       studentName, indexNumber, grade, section, guardianName, hasFace, descriptorLength: descriptorArray.length
     });
 
@@ -170,9 +164,9 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
         }
 
         return new faceapi.LabeledFaceDescriptors(
-          data.studentName,
-          [new Float32Array(data.faceDescriptor)]
-        );
+  data.studentId,   // unique id
+  [new Float32Array(data.faceDescriptor)]
+);
       })
       .filter(item => item !== null); // Remove the skipped students
 
@@ -181,31 +175,37 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
       return res.status(404).json({ message: "No registered faces found in database." });
     }
 
-    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55); // Adjust threshold as needed
 
     // 3. Process the Uploaded Image
-    const img = await canvas.loadImage(req.file.buffer);
+const img = await canvas.loadImage(req.file.buffer);
 
-    // 1. Detect Face
-    const detections = await ssdNet.locateFaces(img);
+const detection = await faceapi
+  .detectSingleFace(img)
+  .withFaceLandmarks()
+  .withFaceDescriptor();
 
-    if (!detections || detections.length === 0) {
-      return res.status(400).json({ message: "No face detected." });
-    }
+if (!detection) {
+  return res.status(400).json({ message: "No face detected." });
+}
 
-    const face = detections[0];
-    const landmarks = await landmarkNet.detectLandmarks(img, face);
-    const descriptor = await recognitionNet.computeFaceDescriptor(img, landmarks);
-
-    // 4. Find Best Match
-    const bestMatch = faceMatcher.findBestMatch(descriptor);
+// 4. Find Best Match
+const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
 
     if (bestMatch.label === "unknown") {
       return res.status(404).json({ message: "Face not recognized." });
     }
 
     // 5. Log Attendance
-    const studentName = bestMatch.label; // Use full name for proper record-keeping
+    const studentId = bestMatch.label;
+
+const studentDoc = await db.collection("students").doc(studentId).get();
+
+if (!studentDoc.exists) {
+  return res.status(404).json({ message: "Student not found." });
+}
+
+const studentName = studentDoc.data().studentName;
 
     await db.collection("attendance").add({
       studentName: studentName,
