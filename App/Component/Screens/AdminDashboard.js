@@ -1,12 +1,36 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
+import { firestore } from '../../config/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminDashboard() {
   const navigation = useNavigation();
   const { colors } = useTheme();
+  const { user } = useAuth();
+  const [adminData, setAdminData] = useState(null);
+  const [loadingAdmin, setLoadingAdmin] = useState(true);
+
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        if (!user?.uid) return;
+        const adminDocRef = doc(firestore, 'admins', user.uid);
+        const adminDocSnap = await getDoc(adminDocRef);
+        if (adminDocSnap.exists()) {
+          setAdminData(adminDocSnap.data());
+        }
+      } catch (error) {
+        console.error('Error fetching admin data:', error);
+      } finally {
+        setLoadingAdmin(false);
+      }
+    };
+    fetchAdminData();
+  }, [user]);
 
   const InfoRow = ({ label, value }) => (
     <View style={[styles.infoRow, { backgroundColor: colors.background }]}>
@@ -48,9 +72,15 @@ export default function AdminDashboard() {
       <View style={[styles.profileCard, { backgroundColor: colors.card }]}>
         <Image source={require('../../assets/edulogo.png')} style={styles.profileImage} />
         <Text style={[styles.brand, { color: colors.text }]}>EDUTRACK</Text>
-        <InfoRow label="Name" value="R.S. Sumangala" />
-        <InfoRow label="Admin ID" value="AD1258" />
-        <InfoRow label="Email Address" value="admin90@gmail.com" />
+        {loadingAdmin ? (
+          <ActivityIndicator color={colors.primary} style={{ marginVertical: 10 }} />
+        ) : (
+          <>
+            <InfoRow label="Name" value={adminData?.username || 'N/A'} />
+            <InfoRow label="Admin ID" value={adminData?.staffId || 'N/A'} />
+            <InfoRow label="Email Address" value={adminData?.email || user?.email || 'N/A'} />
+          </>
+        )}
       </View>
 
       <View style={styles.buttonGrid}>

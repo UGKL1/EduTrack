@@ -1,6 +1,7 @@
 // Component/Screens/StaffSignUp.js
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator,
 } from 'react-native';
@@ -13,8 +14,12 @@ import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 export default function StaffSignUp() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [grade, setGrade] = useState(''); // Added Grade State
+  const [section, setSection] = useState(''); // Added Section State
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
@@ -22,7 +27,7 @@ export default function StaffSignUp() {
 
   const handleSignup = async () => {
     // Validation
-    if (!username || !email || !newPassword || !confirmPassword) {
+    if (!username || !email || !grade || !section || !newPassword || !confirmPassword) {
       Toast.show({ type: 'error', text1: 'All fields are required.' });
       return;
     }
@@ -47,6 +52,8 @@ export default function StaffSignUp() {
         uid: user.uid,
         username: username,
         email: email,
+        grade: grade, // Save Grade
+        section: section, // Save Section
         role: 'Teacher',
       });
 
@@ -77,7 +84,7 @@ export default function StaffSignUp() {
       setLoading(false);
     }
   };
-  
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
@@ -107,20 +114,51 @@ export default function StaffSignUp() {
         />
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="New Password"
+          placeholder="Grade (e.g. 10)"
           placeholderTextColor={colors.placeholder}
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
+          value={grade}
+          onChangeText={setGrade}
+          keyboardType="numeric"
         />
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="Confirm Password"
+          placeholder="Section (e.g. A)"
           placeholderTextColor={colors.placeholder}
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
+          value={section}
+          onChangeText={setSection}
         />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="New Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showNewPassword}
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowNewPassword(!showNewPassword)}
+          >
+            <Ionicons name={showNewPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="Confirm Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={styles.button}
@@ -171,6 +209,19 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
+  },
+  passwordContainer: {
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  passwordInput: {
+    padding: 12,
+    borderRadius: 8,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
   },
   button: {
     backgroundColor: '#007BFF',

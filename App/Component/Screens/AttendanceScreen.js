@@ -7,11 +7,10 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useTheme } from '../../context/ThemeContext';
-import { API_URL } from '../../config/config';
-
-const BACKEND_API_URL = API_URL;
+import useApiUrl from '../../hooks/useApiUrl';
 
 export default function AttendanceScreen({ navigation }) {
+  const { apiUrl: BACKEND_API_URL, loadingUrl } = useApiUrl();
   const { colors } = useTheme(); // Use Theme// Use Theme
   const [permissionState, setPermissionState] = useState(null); // null | "granted" | "denied"
   const [isLoading, setIsLoading] = useState(false);
@@ -68,8 +67,8 @@ export default function AttendanceScreen({ navigation }) {
         quality: 0.7,
       });
 
-      if (result.cancelled === true) return;
-      
+      if (result.canceled === true) return;
+
       const uri = result.uri ?? result.assets?.[0]?.uri;
       if (!uri) return;
 
@@ -82,13 +81,17 @@ export default function AttendanceScreen({ navigation }) {
   };
 
   const uploadImage = async (uri) => {
+    if (loadingUrl) {
+      Alert.alert("Connecting", "Please wait while connecting to the server...");
+      return;
+    }
     setIsLoading(true);
     setScanResult(null);
 
     try {
       const formData = new FormData();
       const uriParts = uri.split(".");
-      const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0]; 
+      const fileType = (uriParts[uriParts.length - 1] || "jpg").split(/\#|\?/)[0];
       const filename = `photo.${fileType}`;
 
       formData.append("faceImage", {
@@ -102,16 +105,16 @@ export default function AttendanceScreen({ navigation }) {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-          timeout: 25000,
+          timeout: 60000,
         }
       );
 
       // ✅ UPDATE: Combine the message and the student name
       const serverMsg = res.data?.message || "Attendance Marked";
       const studentName = res.data?.student || ""; // Get student name from backend
-      
-      const displayMessage = studentName 
-        ? `${serverMsg}\n👤 ${studentName}` 
+
+      const displayMessage = studentName
+        ? `${serverMsg}\n👤 ${studentName}`
         : serverMsg;
 
       setScanResult({

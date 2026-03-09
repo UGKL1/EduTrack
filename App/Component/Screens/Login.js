@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator,
+  StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator, SafeAreaView,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
@@ -13,9 +13,10 @@ import { useTheme } from '../../context/ThemeContext';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const navigation = useNavigation();
   const { colors } = useTheme();
 
@@ -24,11 +25,16 @@ export default function Login() {
       Toast.show({ type: 'error', text1: 'Email and password are required.' });
       return;
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Toast.show({ type: 'error', text1: 'Please enter a valid email address.' });
+      return;
+    }
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const userDocRef = doc(firestore, 'teachers', user.uid); 
+      const userDocRef = doc(firestore, 'teachers', user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
@@ -51,9 +57,9 @@ export default function Login() {
       setLoading(false);
     }
   };
-  
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <TouchableOpacity
         style={styles.backArrow}
         onPress={() => navigation.navigate('SignupOrLogin')}
@@ -75,14 +81,22 @@ export default function Login() {
           autoCapitalize="none"
           keyboardType="email-address"
         />
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="Password"
-          placeholderTextColor={colors.placeholder}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.row}>
           <TouchableOpacity
@@ -111,7 +125,7 @@ export default function Login() {
           <Text style={styles.buttonText}>Back to Sign up</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -136,6 +150,19 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
+  },
+  passwordContainer: {
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  passwordInput: {
+    padding: 12,
+    borderRadius: 8,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
   },
   row: {
     flexDirection: 'row',
