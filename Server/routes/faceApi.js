@@ -139,12 +139,12 @@ console.log("Saving to Firestore with data:", {
   }
 });
 
-// --- 6. MARK ATTENDANCE ROUTE ---
-// Server/routes/faceApi.js
-
 // --- 6. MARK ATTENDANCE ROUTE (FIXED) ---
 router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => {
   if (!modelsLoaded) return res.status(503).json({ message: "Server initializing..." });
+
+  // 🚨 RAM TRACKER 1: Server starting the request
+  console.log(`🧠 RAM Usage Start: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`);
 
   try {
     if (!req.file) return res.status(400).json({ message: "No face image uploaded" });
@@ -152,45 +152,46 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
     // 1. Load All Students from DB
     const studentsSnapshot = await db.collection("students").get();
 
-    // 2. Prepare Face Matcher Data (CRITICAL FIX HERE)
+    // 2. Prepare Face Matcher Data
     const labeledDescriptors = studentsSnapshot.docs
       .map(doc => {
         const data = doc.data();
-
-        // --- THE FIX: Skip students with no face or wrong data length ---
-        // A valid face descriptor ALWAYS has 128 numbers.
         if (!data.faceDescriptor || data.faceDescriptor.length !== 128) {
           return null;
         }
-
         return new faceapi.LabeledFaceDescriptors(
-  data.studentId,   // unique id
-  [new Float32Array(data.faceDescriptor)]
-);
+          data.studentId,
+          [new Float32Array(data.faceDescriptor)]
+        );
       })
-      .filter(item => item !== null); // Remove the skipped students
+      .filter(item => item !== null);
 
-    // If no one in the database has a face, we can't match anything
     if (labeledDescriptors.length === 0) {
       return res.status(404).json({ message: "No registered faces found in database." });
     }
 
-    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55); // Adjust threshold as needed
+    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+
+    // 🚨 RAM TRACKER 2: The Danger Zone (Right before processing image)
+    console.log(`🧠 RAM Usage Before AI Scan: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB / 512 MB Limit`);
 
     // 3. Process the Uploaded Image
-const img = await canvas.loadImage(req.file.buffer);
+    const img = await canvas.loadImage(req.file.buffer);
 
-const detection = await faceapi
-  .detectSingleFace(img)
-  .withFaceLandmarks()
-  .withFaceDescriptor();
+    const detection = await faceapi
+      .detectSingleFace(img)
+      .withFaceLandmarks()
+      .withFaceDescriptor();
 
-if (!detection) {
-  return res.status(400).json({ message: "No face detected." });
-}
+    // 🚨 RAM TRACKER 3: If the server survives the scan!
+    console.log(`🧠 RAM Usage After AI Scan: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`);
 
-// 4. Find Best Match
-const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+    if (!detection) {
+      return res.status(400).json({ message: "No face detected." });
+    }
+
+    // 4. Find Best Match
+    const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
 
     if (bestMatch.label === "unknown") {
       return res.status(404).json({ message: "Face not recognized." });
@@ -198,14 +199,13 @@ const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
 
     // 5. Log Attendance
     const studentId = bestMatch.label;
+    const studentDoc = await db.collection("students").doc(studentId).get();
 
-const studentDoc = await db.collection("students").doc(studentId).get();
+    if (!studentDoc.exists) {
+      return res.status(404).json({ message: "Student not found." });
+    }
 
-if (!studentDoc.exists) {
-  return res.status(404).json({ message: "Student not found." });
-}
-
-const studentName = studentDoc.data().studentName;
+    const studentName = studentDoc.data().studentName;
 
     await db.collection("attendance").add({
       studentName: studentName,
