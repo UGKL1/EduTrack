@@ -1,4 +1,3 @@
-// AttendanceScreen.safeImagePicker.js
 import React, { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, Alert, Linking, SafeAreaView,
@@ -7,12 +6,13 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useTheme } from '../../context/ThemeContext';
-import useApiUrl from '../../hooks/useApiUrl';
+
+// 🚨 FIXED: Directly importing the bulletproof URL from your config
+import { API_URL } from '../../config/config';
 
 export default function AttendanceScreen({ navigation }) {
-  const { apiUrl: BACKEND_API_URL, loadingUrl } = useApiUrl();
-  const { colors } = useTheme(); // Use Theme// Use Theme
-  const [permissionState, setPermissionState] = useState(null); // null | "granted" | "denied"
+  const { colors } = useTheme(); 
+  const [permissionState, setPermissionState] = useState(null); 
   const [isLoading, setIsLoading] = useState(false);
   const [pickedUri, setPickedUri] = useState(null);
   const [scanResult, setScanResult] = useState(null);
@@ -81,10 +81,6 @@ export default function AttendanceScreen({ navigation }) {
   };
 
   const uploadImage = async (uri) => {
-    if (loadingUrl) {
-      Alert.alert("Connecting", "Please wait while connecting to the server...");
-      return;
-    }
     setIsLoading(true);
     setScanResult(null);
 
@@ -100,8 +96,9 @@ export default function AttendanceScreen({ navigation }) {
         type: `image/${fileType}`,
       });
 
+      // 🚨 FIXED: Now using the hardcoded API_URL from config.js
       const res = await axios.post(
-        `${BACKEND_API_URL}/mark-attendance`,
+        `${API_URL}/mark-attendance`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -109,9 +106,8 @@ export default function AttendanceScreen({ navigation }) {
         }
       );
 
-      // ✅ UPDATE: Combine the message and the student name
       const serverMsg = res.data?.message || "Attendance Marked";
-      const studentName = res.data?.student || ""; // Get student name from backend
+      const studentName = res.data?.student || ""; 
 
       const displayMessage = studentName
         ? `${serverMsg}\n👤 ${studentName}`

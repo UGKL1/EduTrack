@@ -7,17 +7,17 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
-import useApiUrl from '../../hooks/useApiUrl';
 
+// 🚨 FIXED: Directly importing the bulletproof URL from your config
+import { API_URL } from '../../config/config'; 
 import { sendAdminNotification } from '../../services/notificationService';
 
 export default function RegisterScreen({ navigation }) {
-  const { apiUrl: BACKEND_API_URL, loadingUrl } = useApiUrl();
   // --- STATE ---
   const [name, setName] = useState("");
   const [indexNumber, setIndexNumber] = useState("");
-  const [grade, setGrade] = useState(""); // Added Grade
-  const [section, setSection] = useState(""); // Added Section
+  const [grade, setGrade] = useState(""); 
+  const [section, setSection] = useState(""); 
   const [guardianName, setGuardianName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [address, setAddress] = useState("");
@@ -30,7 +30,6 @@ export default function RegisterScreen({ navigation }) {
     try {
       const result = await ImagePicker.launchCameraAsync({
         quality: 0.5,
-        // No editing/cropping to avoid crashes on some devices
       });
 
       if (!result.canceled) {
@@ -43,16 +42,11 @@ export default function RegisterScreen({ navigation }) {
     }
   };
 
-  // --- 2. REGISTER FUNCTION (Now Checks ALL Fields) ---
+  // --- 2. REGISTER FUNCTION ---
   const handleRegister = async () => {
-    if (loadingUrl) {
-      Alert.alert("Connecting", "Please wait while connecting to the server...");
-      return;
-    }
-
-    // 🚨 VALIDATION CHECK: All text fields are now REQUIRED
+    // 🚨 VALIDATION CHECK: All text fields are required
     if (!name || !indexNumber || !grade || !section || !guardianName || !contactNumber || !address || !image) {
-      return Alert.alert("Missing Data", "All fields (Name, Index, Grade, Section, Guardian, Contact, Address) are required.");
+      return Alert.alert("Missing Data", "All fields (Name, Index, Grade, Section, Guardian, Contact, Address) and a Photo are required.");
     }
 
     setLoading(true);
@@ -66,7 +60,6 @@ export default function RegisterScreen({ navigation }) {
       formData.append("contactNumber", contactNumber);
       formData.append("homeAddress", address);
 
-      // Image remains OPTIONAL (only appended if taken)
       if (image) {
         const filename = image.split('/').pop();
         const match = /\.(\w+)$/.exec(filename);
@@ -79,15 +72,15 @@ export default function RegisterScreen({ navigation }) {
         });
       }
 
-      console.log("Sending data to:", `${BACKEND_API_URL}/enroll-student`);
+      // 🚨 FIXED: Now using the hardcoded API_URL from config.js
+      console.log("Sending data to:", `${API_URL}/enroll-student`);
 
-      await axios.post(`${BACKEND_API_URL}/enroll-student`, formData, {
+      await axios.post(`${API_URL}/enroll-student`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // 🔔 Add Firestore notification
+      // 🔔 Add notification
       await notifyStudentRegistered(name);
-
       await sendAdminNotification(
         `New Student Registered: ${name} (Grade ${grade}-${section})`,
         'success'

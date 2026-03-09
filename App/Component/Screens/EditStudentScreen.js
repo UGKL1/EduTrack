@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
     View, Text, TextInput, TouchableOpacity, Alert,
     ActivityIndicator, ScrollView, StyleSheet, KeyboardAvoidingView, Platform
 } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
-import useApiUrl from '../../hooks/useApiUrl';
 import useAuth from '../../hooks/useAuth';
+
+// 🚨 FIXED: Directly importing the bulletproof URL from your config
+import { API_URL } from '../../config/config';
 
 export default function EditStudentScreen({ route, navigation }) {
     // Get student data from navigation params
     const { student } = route.params;
     const { user } = useAuth();
     const isAdmin = user?.role === 'Admin';
-    const { apiUrl: API_URL, loadingUrl } = useApiUrl();
 
     // --- STATE ---
     const [name, setName] = useState(student.studentName || "");
@@ -28,11 +29,6 @@ export default function EditStudentScreen({ route, navigation }) {
 
     // --- UPDATE FUNCTION ---
     const handleUpdate = async () => {
-        if (loadingUrl) {
-            Alert.alert("Connecting", "Please wait while connecting to the server...");
-            return;
-        }
-
         // 🚨 VALIDATION CHECK
         if (!name || !indexNumber || !grade || !section || !guardianName || !contactNumber || !address) {
             return Alert.alert("Missing Data", "All fields are required.");
@@ -42,7 +38,7 @@ export default function EditStudentScreen({ route, navigation }) {
         try {
             const updateData = {
                 studentName: name,
-                studentId: indexNumber, // Include the (potentially new) ID
+                studentId: indexNumber, 
                 grade: grade,
                 section: section,
                 guardianName: guardianName,
@@ -52,9 +48,6 @@ export default function EditStudentScreen({ route, navigation }) {
 
             console.log("Updating data at:", `${API_URL}/students/${student.studentId}`);
 
-            // Note: If the ID changes, we might need to handle that on the backend
-            // or use the old ID in the URL and the new ID in the body.
-            // Assuming the URL uses the old ID to find the record.
             await axios.put(`${API_URL}/students/${student.studentId}`, updateData);
 
             Alert.alert("Success", "Student Updated Successfully!", [
@@ -72,11 +65,6 @@ export default function EditStudentScreen({ route, navigation }) {
 
     // --- DELETE FUNCTION ---
     const handleDelete = () => {
-        if (loadingUrl) {
-            Alert.alert("Connecting", "Please wait while connecting to the server...");
-            return;
-        }
-
         Alert.alert(
             "Delete Student",
             "Are you sure you want to delete this student? This action cannot be undone.",
@@ -222,7 +210,11 @@ export default function EditStudentScreen({ route, navigation }) {
                             disabled={loading}
                             style={[styles.button, { backgroundColor: "#FF3B30", marginTop: 15 }, loading && styles.buttonDisabled]}
                         >
-                            <Text style={styles.buttonText}>Delete Student</Text>
+                            {loading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Text style={styles.buttonText}>Delete Student</Text>
+                            )}
                         </TouchableOpacity>
                     )}
 
