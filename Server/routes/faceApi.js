@@ -11,9 +11,9 @@ try {
   let serviceAccount;
 
   // Check if we are in production (Render) with a base64 encoded environment variable
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.log("🔒 Loading Firebase credentials from environment variable...");
-    const decodedKey = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
+    const decodedKey = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf-8');
     serviceAccount = JSON.parse(decodedKey);
   } else {
     // Fallback to local file for development
