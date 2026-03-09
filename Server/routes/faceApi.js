@@ -205,17 +205,25 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
       return res.status(404).json({ message: "Student not found." });
     }
 
+    // ... inside the mark-attendance try block, after bestMatch logic ...
+
     const studentName = studentDoc.data().studentName;
 
-    await db.collection("attendance").add({
+    console.log(`📡 Sending to Firebase: Attendance for ${studentName}`);
+
+// 🚨 CHANGE: Store the result in a variable to confirm it saved
+    const docRef = await db.collection("attendance").add({
       studentName: studentName,
       date: new Date().toISOString().split('T')[0],
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       status: "Present"
     });
 
+    // 🚨 ONLY IF THIS LOG PRINTS is the data actually in the database
+    console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
     console.log(`📍 Attendance Marked: ${studentName}`);
-    res.json({ success: true, message: "Attendance Marked", student: studentName });
+
+  res.json({ success: true, message: "Attendance Marked", student: studentName });
 
   } catch (error) {
     console.error("Attendance Error:", error);
