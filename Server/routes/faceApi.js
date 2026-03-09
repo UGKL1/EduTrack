@@ -10,11 +10,19 @@ const admin = require("firebase-admin");
 try {
   let serviceAccount;
 
+<<<<<<< Updated upstream
   // Check if we are in production (Render) with a base64 encoded environment variable
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.log("🔒 Loading Firebase credentials from environment variable...");
     const decodedKey = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf-8');
     serviceAccount = JSON.parse(decodedKey);
+=======
+  // Check if we are in production (Render) with a standard environment variable
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.log("🔒 Loading Firebase credentials from environment variable...");
+    // 🚨 FIX IS HERE: We just parse the raw string directly now! No more Buffer.from or base64.
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+>>>>>>> Stashed changes
   } else {
     // Fallback to local file for development
     console.log("📂 Loading Firebase credentials from local file...");
