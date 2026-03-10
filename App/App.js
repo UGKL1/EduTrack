@@ -1,3 +1,6 @@
+// 1. POLYFILLS MUST GO FIRST
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
 // App.js
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
