@@ -212,12 +212,33 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
     console.log(`📡 Sending to Firebase: Attendance for ${studentName}`);
 
 // 🚨 CHANGE: Store the result in a variable to confirm it saved
-    const docRef = await db.collection("attendance").add({
-      studentName: studentName,
-      date: new Date().toISOString().split('T')[0],
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      status: "Present"
-    });
+    const today = new Date().toISOString().split("T")[0];
+
+// Check if attendance already exists for this student today
+const existingAttendance = await db
+  .collection("attendance")
+  .where("studentName", "==", studentName)
+  .where("date", "==", today)
+  .get();
+
+if (!existingAttendance.empty) {
+  console.log(`⚠️ Attendance already marked for ${studentName} today`);
+  return res.json({
+    success: false,
+    message: "Attendance already marked for today"
+  });
+}
+
+// If not marked, save attendance
+const docRef = await db.collection("attendance").add({
+  studentName: studentName,
+  studentId: studentId,
+  date: today,
+  timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  status: "Present"
+});
+
+console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
 
     // 🚨 ONLY IF THIS LOG PRINTS is the data actually in the database
     console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
