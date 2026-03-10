@@ -45,8 +45,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "1a292aaa-40f1-41a3-94b6-868c3e568c40"
+        "projectId": "0e8bc1be-8efe-4972-86fe-be8dc0aa9a42"
       }
-    }
+    },
+    "owner": "sandunl"
   }
 }
