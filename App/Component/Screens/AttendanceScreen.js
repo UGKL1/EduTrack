@@ -64,7 +64,7 @@ export default function AttendanceScreen({ navigation }) {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: false,
-        quality: 0.7,
+        quality: 0.2,
       });
 
       if (result.canceled === true) return;
