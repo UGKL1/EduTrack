@@ -25,12 +25,12 @@ export default function StaffSignUp() {
   const [gradeOpen, setGradeOpen] = useState(false);
   const [grade, setGrade] = useState(null);
   const [gradeItems, setGradeItems] = useState([
-    { label: 'Grade 6', value: '1' },
-    { label: 'Grade 7', value: '2' },
-    { label: 'Grade 8', value: '3' },
-    { label: 'Grade 9', value: '4' },
-    { label: 'Grade 10', value: '5' },
-    { label: 'Grade 11', value: '6' }
+    { label: 'Grade 1', value: '1' },
+    { label: 'Grade 2', value: '2' },
+    { label: 'Grade 3', value: '3' },
+    { label: 'Grade 4', value: '4' },
+    { label: 'Grade 5', value: '5' }
+   
   ]);
 
   const [sectionOpen, setSectionOpen] = useState(false);
