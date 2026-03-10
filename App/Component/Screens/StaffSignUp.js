@@ -1,34 +1,33 @@
 // Component/Screens/StaffSignUp.js
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
+  StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-
-// Import Firebase auth and firestore functions
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, firestore } from '../../config/firebase';
+import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 
 export default function StaffSignUp() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [grade, setGrade] = useState(''); // Added Grade State
+  const [section, setSection] = useState(''); // Added Section State
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
+  const { colors } = useTheme(); // Use Theme
 
   const handleSignup = async () => {
     // Validation
-    if (!username || !email || !newPassword || !confirmPassword) {
+    if (!username || !email || !grade || !section || !newPassword || !confirmPassword) {
       Toast.show({ type: 'error', text1: 'All fields are required.' });
       return;
     }
@@ -49,10 +48,12 @@ export default function StaffSignUp() {
       const user = userCredential.user;
 
       // Save user role and info to 'teachers' collection
-      await setDoc(doc(firestore, 'teachers', user.uid), { // <-- MODIFIED
+      await setDoc(doc(firestore, 'teachers', user.uid), {
         uid: user.uid,
         username: username,
         email: email,
+        grade: grade, // Save Grade
+        section: section, // Save Section
         role: 'Teacher',
       });
 
@@ -64,7 +65,7 @@ export default function StaffSignUp() {
       });
 
       // Navigate to Teacher login screen
-      navigation.navigate('Login'); // <-- ADDED
+      navigation.navigate('Login');
 
     } catch (error) {
       // Handle errors
@@ -83,9 +84,9 @@ export default function StaffSignUp() {
       setLoading(false);
     }
   };
-  
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -96,37 +97,68 @@ export default function StaffSignUp() {
 
       <View style={styles.formContainer}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Username"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={username}
           onChangeText={setUsername}
         />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Email address"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
         />
         <TextInput
-          style={styles.input}
-          placeholder="New Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+          placeholder="Grade (e.g. 10)"
+          placeholderTextColor={colors.placeholder}
+          value={grade}
+          onChangeText={setGrade}
+          keyboardType="numeric"
         />
         <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+          placeholder="Section (e.g. A)"
+          placeholderTextColor={colors.placeholder}
+          value={section}
+          onChangeText={setSection}
         />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="New Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showNewPassword}
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowNewPassword(!showNewPassword)}
+          >
+            <Ionicons name={showNewPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="Confirm Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={styles.button}
@@ -159,7 +191,6 @@ export default function StaffSignUp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
     padding: 20,
   },
   logoContainer: {
@@ -170,22 +201,27 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
   },
-  appName: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
   formContainer: {
     flex: 1,
     marginTop: 80,
   },
   input: {
-    backgroundColor: '#1E1E1E',
     padding: 12,
     borderRadius: 8,
-    color: '#fff',
     marginVertical: 8,
+  },
+  passwordContainer: {
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  passwordInput: {
+    padding: 12,
+    borderRadius: 8,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
   },
   button: {
     backgroundColor: '#007BFF',

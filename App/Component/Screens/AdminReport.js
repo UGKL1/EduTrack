@@ -1,5 +1,8 @@
+// Component/Screens/AdminReport.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, TextInput, FlatList, Alert, ActivityIndicator } from 'react-native';
+import {
+  View, Text, StyleSheet, TouchableOpacity, Platform, TextInput, FlatList, Alert, ActivityIndicator
+} from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -9,7 +12,7 @@ import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 
-export default function AttendanceReports({ navigation }) {
+export default function AdminReport({ navigation }) {
   const { colors, isDark } = useTheme();
 
   // Date State
@@ -21,9 +24,9 @@ export default function AttendanceReports({ navigation }) {
   const [filteredList, setFilteredList] = useState([]);
   const [studentsMap, setStudentsMap] = useState({});
   const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({ present: 0, absent: 0 });
+  const [stats, setStats] = useState({ present: 0 });
 
-  // Filter attendance data
+  // Filter State
   const [reportTypeOpen, setReportTypeOpen] = useState(false);
   const [reportType, setReportType] = useState('Daily');
   const [reportTypes] = useState([
@@ -33,25 +36,18 @@ export default function AttendanceReports({ navigation }) {
 
   const [searchName, setSearchName] = useState('');
 
+  // Grade Dropdown
   const [gradeOpen, setGradeOpen] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState(null);
-  const [gradeItems] = useState([
+  const [gradeItems, setGradeItems] = useState([
     { label: 'All Grades', value: null },
-    { label: 'Grade 1', value: '1' },
-    { label: 'Grade 2', value: '2' },
-    { label: 'Grade 3', value: '3' },
-    { label: 'Grade 4', value: '4' },
-    { label: 'Grade 5', value: '5' },
-    { label: 'Grade 6', value: '6' },
-    { label: 'Grade 7', value: '7' },
-    { label: 'Grade 8', value: '8' },
-    { label: 'Grade 9', value: '9' },
-    { label: 'Grade 10', value: '10' },
-    { label: 'Grade 11', value: '11' },
-    { label: 'Grade 12', value: '12' },
-    { label: 'Grade 13', value: '13' },
+    ...Array.from({ length: 13 }, (_, i) => ({
+      label: `Grade ${i + 1}`,
+      value: `${i + 1}`, // Storing as string number to match standard
+    }))
   ]);
 
+  // Section Dropdown
   const [sectionOpen, setSectionOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
   const [sectionItems] = useState([
@@ -80,7 +76,7 @@ export default function AttendanceReports({ navigation }) {
     filterData();
   }, [searchName, selectedGrade, selectedSection, attendanceList]);
 
-  // 1. Fetch all students to map details (Grade/Section)
+  // 1. Fetch Students
   const fetchStudents = async () => {
     setLoading(true);
     try {
@@ -89,15 +85,13 @@ export default function AttendanceReports({ navigation }) {
       const map = {};
       snapshot.forEach(doc => {
         const data = doc.data();
-        // Map Name or ID to details. Using Name for now as Attendance stores Name.
-        // Ideally Attendance should store StudentID. 
-        if (data.studentId) {
-  map[data.studentId] = {
-    grade: data.grade,
-    section: data.section,
-    name: data.studentName
-  };
-}
+        if (data.studentName) {
+          map[data.studentName] = {
+            grade: data.grade,
+            section: data.section,
+            id: doc.id
+          };
+        }
       });
       setStudentsMap(map);
     } catch (err) {
@@ -108,7 +102,7 @@ export default function AttendanceReports({ navigation }) {
     }
   };
 
-  // 2. Fetch Attendance Data
+  // 2. Fetch Attendance
   const fetchAttendance = async () => {
     setLoading(true);
     try {
@@ -116,12 +110,9 @@ export default function AttendanceReports({ navigation }) {
       const attRef = collection(firestore, 'attendance');
 
       if (reportType === 'Daily') {
-        // Query for specific date
-        // Note: Stored date is 'YYYY-MM-DD'
         const dateStr = date.toISOString().split('T')[0];
-        q = query(attRef, where('date', '==', dateStr), orderBy('timestamp', 'desc'));
+        q = query(attRef, where('date', '==', dateStr));
       } else {
-        // All time - might want to limit this in production!
         q = query(attRef, orderBy('timestamp', 'desc'));
       }
 
@@ -130,7 +121,7 @@ export default function AttendanceReports({ navigation }) {
 
       snapshot.forEach(doc => {
         const data = doc.data();
-        const studentInfo = studentsMap[data.studentId] || {};
+        const studentInfo = studentsMap[data.studentName] || {};
 
         records.push({
           id: doc.id,
@@ -160,7 +151,10 @@ export default function AttendanceReports({ navigation }) {
     }
 
     if (selectedGrade) {
-      result = result.filter(item => item.grade === selectedGrade);
+      // Check for exact match or 'Grade X' format just in case
+      result = result.filter(item =>
+        item.grade == selectedGrade || item.grade === `Grade ${selectedGrade}`
+      );
     }
 
     if (selectedSection) {
@@ -168,15 +162,7 @@ export default function AttendanceReports({ navigation }) {
     }
 
     setFilteredList(result);
-
-    // Calculate Stats
-    const total = result.length;
-    // Assuming 'status' is 'Present' or 'Absent'. 
-    // If you only log 'Present' records, you need total students to find Absent.
-    // For this implementation, we Count 'Present' records found. 
-    // If you want "Absent", you'd need (Total Students in Filter - Present).
-    // Let's simplified to just showing count of records found (Presence).
-    setStats({ present: total, absent: 0 });
+    setStats({ present: result.length });
   };
 
   const onChangeDate = (event, selectedDate) => {
@@ -185,7 +171,9 @@ export default function AttendanceReports({ navigation }) {
     setDate(currentDate);
   };
 
-  const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+  const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(
+    date.getMonth() + 1
+  ).toString().padStart(2, '0')}-${date.getFullYear()}`;
 
   // 4. Export CSV
   const exportToCSV = async () => {
@@ -200,7 +188,7 @@ export default function AttendanceReports({ navigation }) {
         csv += `${item.studentName},${item.date},${item.status},${item.grade},${item.section}\n`;
       });
 
-      const fileName = `Attendance_${reportType}_${formattedDate}.csv`;
+      const fileName = `Admin_Attendance_${reportType}_${formattedDate}.csv`;
       const fileUri = FileSystem.documentDirectory + fileName;
 
       await FileSystem.writeAsStringAsync(fileUri, csv, { encoding: 'utf8' });
@@ -231,11 +219,12 @@ export default function AttendanceReports({ navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <FontAwesome5 name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Attendance Reports</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Attendance Reports (Admin)</Text>
       </View>
 
       <View style={styles.summaryContainer}>
@@ -243,11 +232,10 @@ export default function AttendanceReports({ navigation }) {
           <Text style={[styles.cardLabel, { color: colors.subText }]}>Records Found</Text>
           <Text style={[styles.cardValue, { color: colors.text }]}>{stats.present}</Text>
         </View>
-        {/* You can add more summary cards here logic permits */}
       </View>
 
       {/* Controls Container */}
-      <View style={{ zIndex: 3000 }}>
+      <View style={{ zIndex: 3000, marginBottom: 15 }}>
         <View style={styles.row}>
           <TouchableOpacity
             style={[styles.dateBox, { backgroundColor: colors.card, flex: 1, marginRight: 10 }]}
@@ -281,7 +269,7 @@ export default function AttendanceReports({ navigation }) {
         />
       )}
 
-      {/* Search & Filter */}
+      {/* Search & Filters */}
       <View style={[styles.filterContainer, { zIndex: 2000 }]}>
         <TextInput
           style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
@@ -322,9 +310,10 @@ export default function AttendanceReports({ navigation }) {
         </View>
       </View>
 
+      {/* EXPORT SECTION */}
       <TouchableOpacity style={styles.exportButton} onPress={exportToCSV} activeOpacity={0.85}>
-        <Text style={styles.exportText}>Export as CSV</Text>
-        <FontAwesome5 name="file-csv" size={18} color="#fff" style={{ marginLeft: 8 }} />
+        <Text style={styles.exportText}>Export Report</Text>
+        <FontAwesome5 name="download" size={18} color="#fff" style={{ marginLeft: 8 }} />
       </TouchableOpacity>
 
       {/* List */}
@@ -342,17 +331,28 @@ export default function AttendanceReports({ navigation }) {
         />
       )}
 
-      {/* Bottom Nav - Kept consistent */}
+      {/* BOTTOM NAV */}
       <View style={[styles.bottomNav, { backgroundColor: colors.card }]}>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('Dashboard')}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('AdminDashboard')}
+        >
           <FontAwesome5 name="home" size={20} color={colors.text} />
           <Text style={[styles.navText, { color: colors.text }]}>Dashboard</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('NotificationsScreen')}>
+
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('AdminNotificationsScreen')}
+        >
           <FontAwesome5 name="bell" size={20} color={colors.text} />
           <Text style={[styles.navText, { color: colors.text }]}>Notifications</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('SettingsScreen')}>
+
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('SettingsScreen')}
+        >
           <FontAwesome5 name="cog" size={20} color={colors.text} />
           <Text style={[styles.navText, { color: colors.text }]}>Settings</Text>
         </TouchableOpacity>
@@ -366,6 +366,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 15,
     paddingTop: 40,
+    paddingBottom: 80, // Space for bottom nav
   },
   header: {
     flexDirection: 'row',
@@ -379,7 +380,7 @@ const styles = StyleSheet.create({
   },
   summaryContainer: {
     flexDirection: 'row',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   card: {
     flex: 1,
@@ -401,7 +402,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
 
-  filterContainer: { marginVertical: 15 },
+  filterContainer: { marginBottom: 15 },
   input: {
     borderWidth: 1,
     borderRadius: 10,
@@ -416,14 +417,18 @@ const styles = StyleSheet.create({
 
   exportButton: {
     flexDirection: 'row',
-    backgroundColor: '#28a745',
+    backgroundColor: '#007BFF',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
-    marginBottom: 15,
+    paddingVertical: 14,
+    marginBottom: 10,
   },
-  exportText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  exportText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
 
   itemCard: {
     padding: 15,
@@ -446,6 +451,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
-  navButton: { alignItems: 'center' },
-  navText: { fontSize: 12, marginTop: 5 },
+  navButton: {
+    alignItems: 'center',
+  },
+  navText: {
+    fontSize: 12,
+    marginTop: 5,
+  },
 });

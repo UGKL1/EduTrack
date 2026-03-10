@@ -1,149 +1,179 @@
-# 🎓 EduTrack: Smart Attendance System
+# 📘 EduTrack
 
-**Attendance via Facial Recognition 👤📱**
+### Smart Attendance Management System using Facial Recognition
 
-EduTrack is a modern attendance system for educational institutions. Using **facial recognition** on mobile devices, it ensures **accuracy**, **security**, and **zero manual effort**.
+EduTrack is a **mobile-based smart attendance management system** designed for educational institutions. It leverages **facial recognition technology** to automate student attendance, reduce manual errors, prevent proxy attendance, and generate real-time attendance reports for teachers and administrators.
 
----
-
-## 🚀 Key Features
-
-✅ **Real-Time Recognition** – Mark attendance instantly
-🎨 **User-Friendly UI** – Clean & intuitive design
-📱 **Cross-Platform** – React Native (Android & iOS)
-📊 **Reports & Analytics** – Track trends easily
-🔐 **Secure Data** – Firebase + End-to-End Encryption
-👥 **Role-Based Access** – Teachers & Admins
-📶 **Offline Mode** – Works with limited connectivity
+🎓 Developed as an academic project
+🏫 Institution: _The Open University of Sri Lanka_
 
 ---
 
-## 💡 Why EduTrack?
+## ✨ Highlights
 
-⏱️ Save time & reduce admin tasks
-🙅‍♂️ Stop proxy attendance
-📈 Get real-time insights
-💸 Cost-effective (no extra hardware)
-
----
-
-## 🧠 Tech Stack
-
-**Frontend:** React Native • Expo Camera • NativeWind • Axios
-**Backend:** Node.js • Express • Firebase • Azure Face API • JWT
-**Tools:** VS Code • Android Studio • Figma • GitHub
+✅ Facial-recognition-based attendance  
+✅ Role-based access (Teacher / Admin)  
+✅ Real-time reports & summaries  
+✅ Firebase-powered authentication & storage  
+✅ Modern UI with Light / Dark / System themes  
+✅ Integrated Node.js backend for AI processing
 
 ---
 
-## ⚙️ Quick Setup
+## 🧠 System Overview
 
-### 1️⃣ Clone & Install
+EduTrack consists of **two tightly integrated components**:
+
+### 📱 Frontend (Mobile Application)
+
+- Built using **React Native (Expo)**
+- Used by teachers and administrators
+- Handles UI, authentication, camera access, and navigation
+
+### 🧪 Backend (Facial Recognition API)
+
+- Built using **Node.js + Express**
+- Uses **face-api.js** for facial recognition
+- Processes images sent from the mobile app
+- Returns recognition results in real time
+
+---
+
+## 🛠 Technology Stack
+
+### 📱 Frontend
+
+- React Native (Expo)
+- React Navigation (Stack Navigation)
+- Firebase Authentication
+- Firebase Firestore
+- Firebase Storage
+- Expo Image Picker & Camera
+- AsyncStorage (theme persistence)
+
+### 🧠 Backend
+
+- Node.js
+- Express.js
+- face-api.js
+- canvas
+- multer
+
+---
+
+## 📁 Verified Project Structure
+
+```
+EduTrack/
+│
+├── App/
+│   ├── assets/
+│   │   └── edulogo.png
+│   │
+│   ├── Component/
+│   │   └── Screens/
+│   │       ├── Admin.js
+│   │       ├── AdminDashboard.js
+│   │       ├── AdminNotificationsScreen.js
+│   │       ├── AdminReport.js
+│   │       ├── AdminSignUp.js
+│   │       ├── AttendanceReports.js
+│   │       ├── AttendanceScreen.js
+│   │       ├── Dashboard.js
+│   │       ├── Login.js
+│   │       ├── ManageStudent.js
+│   │       ├── ManageTeachers.js
+│   │       ├── NotificationsScreen.js
+│   │       ├── QuickAccess.js
+│   │       ├── ResetPw.js
+│   │       ├── SettingsScreen.js
+│   │       ├── SignupOrLogin.js
+│   │       ├── StaffSignUp.js
+│   │       └── TeacherProfile.js
+│   │
+│   ├── config/
+│   │   └── firebase.js
+│   │
+│   ├── context/
+│   │   └── ThemeContext.js
+│   │
+│   └── hooks/
+│       └── useAuth.js
+│
+├──Server/
+│   ├── routes/
+│   │   └── faceApi.js
+│   └── models/
+│       └── (face-api model files)
+├── package.json
+└── README.md
+```
+
+---
+
+## ⚡ Quick Start
+
+### 1. Clone & Install Dependencies
 
 ```bash
+# Clone repository
 git clone https://github.com/UGKL1/EduTrack.git
-cd edutrack-attendance-system
+
+# Install App dependencies
+cd EduTrack/App
+npm install
+
+# Install Server dependencies
+cd ../Server
 npm install
 ```
 
-### 2️⃣ Configure Env
+### 2. Environment Setup
 
-Create `.env` and add your keys 👇
+Create `.env` in App directory:
 
+```env
+# App/.env
+EXPO_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=your_firebase_measurement_id
 ```
-REACT_APP_FIREBASE_API_KEY=...
-AZURE_FACE_API_KEY=...
-API_BASE_URL=http://localhost:3000
-```
 
-### 3️⃣ Run App
+get private service account key from firebase console and put that as `serviceAccountKey.json` in Server directory:
+
+### 3. Start Development Servers
 
 ```bash
-npx react-native start
-npx react-native run-android   # or run-ios
-```
+# Start mobile app
+cd App
+npx expo start
 
-### 4️⃣ Backend
-
-```bash
-cd backend
-npm install
-npm run dev
+# Start backend server (new terminal)
+cd Server
+node index.js
 ```
 
 ---
 
-## 👩‍🏫 Usage
+## 👥 Team
 
-**For Teachers:**
+**The Open University of Sri Lanka - Group UGKL_1**
 
-- 📸 Take attendance via camera
-- 📋 Review & submit
-- 📈 View reports
-
-**For Admins:**
-
-- 👥 Manage users & students
-- 📊 Generate analytics
-- 🔍 Monitor activity
+- 🎓 **Supervisor:** U.G.K.L. Senarathna
+- 👨‍💻 **Lead Development / Project Manage** K.R.A.R. Jayathilaka
+- 🎨 **UI/UX / Backend Development** L.G.S.B. Liyanage
+- 📱 **Frontend Develpment / QA and Testing ** F.F. Shamra
+- 🧪 **Frontend Develpment / QA and Testing ** Z.I.K. Nuha
+- 📋 **UI/UX / Documentation:** M.S. Hafsa
 
 ---
 
-## 🧪 Testing
+## 📄 License
 
-```bash
-npm test               # Unit
-npm run test:integration
-npm run test:e2e
-```
-
----
-
-## 🚢 Deployment
-
-📱 Mobile: `./gradlew assembleRelease`
-☁️ Backend: Firebase Functions / Heroku / AWS / DigitalOcean
-
----
-
-## 🔒 Security
-
-🔐 JWT + Firebase Auth
-🧱 Encrypted data
-📜 GDPR Compliant
-📑 Audit Logs
-
----
-
-## 📈 Project Status
-
-✅ Design Done
-🚧 Development In Progress
-🧪 Testing Pending
-🚀 Deployment Coming Soon
-
----
-
-## 🤝 Contributing
-
-We 💖 contributions!
-
-```bash
-git checkout -b feature/amazing-feature
-git commit -m "Add amazing feature"
-git push origin feature/amazing-feature
-```
-
-➡️ Open a Pull Request
-
----
-
-## 👥 Team UGKL_1 – The Open University of Sri Lanka
-
-🎓 Supervisor: U.G.K.L. Senarathna
-👨‍💻 K.R.A.R. Jayathilaka – Project Lead / Backend
-🎨 L.G.S.B. Liyanage – Backend / UI-UX
-📱 F.F. Shamra – Frontend / QA & Testing
-🧠 Z.I.K. Nuha – Frontend / QA & Testing
-📋 M.S. Hafsa – Backend / Docs
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---

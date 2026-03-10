@@ -1,21 +1,15 @@
 // Component/Screens/AdminSignUp.js
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
+  StyleSheet, Text, TextInput, View, TouchableOpacity, Image, ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-
-// Import Firebase auth and firestore functions
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, firestore } from '../../config/firebase';
+import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 
 export default function AdminSignUp() {
   const [username, setUsername] = useState('');
@@ -23,9 +17,12 @@ export default function AdminSignUp() {
   const [adminID, setAdminID] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
+  const { colors } = useTheme(); // Use Theme
 
   const handleSignup = async () => {
     // Validation
@@ -50,7 +47,7 @@ export default function AdminSignUp() {
       const user = userCredential.user;
 
       // Save user role and info to 'admins' collection
-      await setDoc(doc(firestore, 'admins', user.uid), { 
+      await setDoc(doc(firestore, 'admins', user.uid), {
         uid: user.uid,
         username: username,
         email: email,
@@ -66,7 +63,7 @@ export default function AdminSignUp() {
       });
 
       // Navigate to Admin login screen
-      navigation.navigate('Admin'); 
+      navigation.navigate('Admin');
 
     } catch (error) {
       // Handle errors
@@ -85,10 +82,9 @@ export default function AdminSignUp() {
       setLoading(false);
     }
   };
-  
- 
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/edulogo.png')}
@@ -99,44 +95,60 @@ export default function AdminSignUp() {
 
       <View style={styles.formContainer}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Username"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={username}
           onChangeText={setUsername}
         />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Email address"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
         />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Admin ID"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={adminID}
           onChangeText={setAdminID}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="New Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="New Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showNewPassword}
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowNewPassword(!showNewPassword)}
+          >
+            <Ionicons name={showNewPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.passwordInput, { backgroundColor: colors.card, color: colors.text }]}
+            placeholder="Confirm Password"
+            placeholderTextColor={colors.placeholder}
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={colors.placeholder} />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={styles.button}
@@ -157,11 +169,10 @@ export default function AdminSignUp() {
     </View>
   );
 }
-// Styles
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
     padding: 20,
   },
   logoContainer: {
@@ -172,22 +183,27 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
   },
-  appName: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
   formContainer: {
     flex: 1,
     marginTop: 80,
   },
   input: {
-    backgroundColor: '#1E1E1E',
     padding: 12,
     borderRadius: 8,
-    color: '#fff',
     marginVertical: 8,
+  },
+  passwordContainer: {
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  passwordInput: {
+    padding: 12,
+    borderRadius: 8,
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
   },
   button: {
     backgroundColor: '#007BFF',

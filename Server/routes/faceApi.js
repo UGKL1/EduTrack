@@ -1,120 +1,308 @@
 const express = require("express");
 const multer = require("multer");
-const faceapi = require("face-api.js"); // Using the standard library
+const faceapi = require("face-api.js");
 const canvas = require("canvas");
 const path = require("path");
+const fs = require("fs");
+const admin = require("firebase-admin");
 
-const router = express.Router();
+// --- 1. SETUP FIREBASE ADMIN ---
+try {
+  let serviceAccount;
 
-// 1. Setup Canvas for FaceAPI in Node.js
+  // Check if we are in production (Render) with a standard environment variable
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.log("🔒 Loading Firebase credentials from environment variable...");
+    // 🚨 FIX IS HERE: We just parse the raw string directly now! No more Buffer.from or base64.
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    // Fallback to local file for development
+    console.log("📂 Loading Firebase credentials from local file...");
+    const serviceAccountPath = path.join(__dirname, "../serviceAccountKey.json");
+
+    if (!fs.existsSync(serviceAccountPath)) {
+      throw new Error(`File not found at: ${serviceAccountPath}`);
+    }
+    serviceAccount = require(serviceAccountPath);
+  }
+
+  // Initialize Firebase (only if not already running)
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log(`✅ Firebase Connected: ${serviceAccount.project_id}`);
+  }
+
+} catch (error) {
+  console.error("❌ FIREBASE ERROR: Could not load serviceAccountKey.json");
+  console.error("   Reason:", error.message);
+  console.error("   -> Did you download a NEW key and put it in the Server folder?");
+  process.exit(1); // Stop server so you can fix it
+}
+
+const db = admin.firestore();
+
+// --- 2. SETUP FACE API ENV ---
 const { Canvas, Image, ImageData } = canvas;
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 
-// 2. Setup Multer
+const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// 3. Global Variables
-let labeledDescriptors = [];
+// --- 3. CREATE NETWORKS MANUALLY ---
+// Create the neural networks
+const ssdNet = new faceapi.SsdMobilenetv1();
+const landmarkNet = new faceapi.FaceLandmark68Net();
+const recognitionNet = new faceapi.FaceRecognitionNet();
+
 let modelsLoaded = false;
 
-// 4. Load Models Manually (The FIX for Node.js)
+// --- 4. LOAD MODELS ---
 async function loadModels() {
   const modelPath = path.join(__dirname, "../models");
-  console.log("⏳ Loading AI models from:", modelPath);
+  console.log("📂 Loading models from:", modelPath);
 
   try {
-    // Manually create the neural networks (Fixes "undefined" error)
-    faceapi.nets.ssdMobilenetv1 = new faceapi.SsdMobilenetv1();
-    faceapi.nets.faceLandmark68 = new faceapi.FaceLandmark68Net();
-    faceapi.nets.faceRecognitionNet = new faceapi.FaceRecognitionNet();
-
-    // Now load the weights from disk
+    // Load weights directly into memory
     await faceapi.nets.ssdMobilenetv1.loadFromDisk(modelPath);
-    await faceapi.nets.faceLandmark68.loadFromDisk(modelPath);
-    await faceapi.nets.faceRecognitionNet.loadFromDisk(modelPath);
+await faceapi.nets.faceLandmark68Net.loadFromDisk(modelPath);
+await faceapi.nets.faceRecognitionNet.loadFromDisk(modelPath);
+
+    
 
     modelsLoaded = true;
-    console.log("✅ AI Models Loaded Successfully");
+    console.log("✅ SYSTEM READY: AI Models loaded.");
+
   } catch (error) {
-    console.error("❌ Error loading models:", error);
+    console.error("❌ Model Loading Failed:", error);
   }
 }
 loadModels();
 
-// =========================================================
-// ROUTE: ENROLL STUDENT
-// =========================================================
+// --- 5. REGISTER STUDENT ROUTE ---
 router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
-  if (!modelsLoaded) return res.status(503).json({ message: "Models loading..." });
+  if (!modelsLoaded) return res.status(503).json({ message: "Server initializing..." });
 
   try {
-    const { studentId, studentName } = req.body;
-    if (!req.file || !studentName) return res.status(400).json({ message: "Image and Name required" });
+    // 1. Get Data (Note: We now accept indexNumber instead of studentId)
+    const { studentName, indexNumber, guardianName, contactNumber, homeAddress, grade, section } = req.body;
 
-    const img = await canvas.loadImage(req.file.buffer);
+    // 2. Validate Required Text Fields
+    if (!studentName || !indexNumber) {
+      console.log("❌ Missing Data:", req.body);
+      return res.status(400).json({ message: "Student Name and Index Number are required." });
+    }
 
-    const detection = await faceapi.detectSingleFace(img)
-      .withFaceLandmarks()
-      .withFaceDescriptor();
+let descriptorArray = [];
+let hasFace = false;
 
-    if (!detection) return res.status(400).json({ message: "No face detected." });
+// 3. Process Image ONLY if it exists
+if (req.file) {
+  console.log("📸 Processing photo...");
+  const img = await canvas.loadImage(req.file.buffer);
+  const detection = await faceapi
+    .detectSingleFace(img)
+    .withFaceLandmarks()
+    .withFaceDescriptor();
 
-    const newDescriptor = new faceapi.LabeledFaceDescriptors(studentName, [detection.descriptor]);
-    labeledDescriptors.push(newDescriptor);
-
-    console.log(`✅ Enrolled: ${studentName}`);
-    res.json({ success: true, message: `Enrolled ${studentName}` });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Enrollment failed" });
+  if (detection) {
+    descriptorArray = Array.from(detection.descriptor);
+    hasFace = true;
   }
-});
+}
 
-// =========================================================
-// ROUTE: MARK ATTENDANCE
-// =========================================================
-router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => {
-  if (!modelsLoaded) return res.status(503).json({ message: "Models loading..." });
-
-  try {
-    if (!req.file) return res.status(400).json({ message: "No image uploaded" });
-
-    const img = await canvas.loadImage(req.file.buffer);
-
-    const detection = await faceapi.detectSingleFace(img)
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-
-    if (!detection) return res.status(400).json({ message: "No face detected." });
-
-    if (labeledDescriptors.length === 0) {
-      return res.status(404).json({ message: "No students registered." });
-    }
-
-    const matcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
-    const bestMatch = matcher.findBestMatch(detection.descriptor);
-
-    if (bestMatch.label === "unknown") {
-      return res.status(401).json({ message: "Student not recognized." });
-    }
-
-    console.log(`📍 Attendance marked for: ${bestMatch.label}`);
-    res.json({
-      success: true,
-      message: `Welcome, ${bestMatch.label}!`,
-      student: bestMatch.label
+// 4. Save to Firestore
+console.log("Saving to Firestore with data:", {
+      studentName, indexNumber, grade, section, guardianName, hasFace, descriptorLength: descriptorArray.length
     });
 
+    await db.collection("students").doc(indexNumber).set({
+      studentName: studentName,
+      studentId: indexNumber, // Fixed: Using indexNumber as studentId
+      grade: grade || "",
+      section: section || "",
+      guardianName: guardianName,
+      guardianPhone: contactNumber,
+      homeAddress: homeAddress,
+      faceDescriptor: descriptorArray,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log(`✅ Registered: ${studentName}`);
+    res.json({ success: true, message: "Student Registered Successfully" });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Processing failed" });
+    console.error("Enrollment Error:", error);
+    res.status(500).json({ message: "Server Error: " + error.message });
   }
 });
 
-// Dummy routes for compatibility
-router.post("/create-group", (req, res) => res.json({ message: "OK" }));
-router.post("/train-group", (req, res) => res.json({ message: "OK" }));
+// --- 6. MARK ATTENDANCE ROUTE (FIXED) ---
+router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => {
+  if (!modelsLoaded) return res.status(503).json({ message: "Server initializing..." });
+
+  // 🚨 RAM TRACKER 1: Server starting the request
+  console.log(`🧠 RAM Usage Start: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`);
+
+  try {
+    if (!req.file) return res.status(400).json({ message: "No face image uploaded" });
+
+    // 1. Load All Students from DB
+    const studentsSnapshot = await db.collection("students").get();
+
+    // 2. Prepare Face Matcher Data
+    const labeledDescriptors = studentsSnapshot.docs
+      .map(doc => {
+        const data = doc.data();
+        if (!data.faceDescriptor || data.faceDescriptor.length !== 128) {
+          return null;
+        }
+        return new faceapi.LabeledFaceDescriptors(
+          data.studentId,
+          [new Float32Array(data.faceDescriptor)]
+        );
+      })
+      .filter(item => item !== null);
+
+    if (labeledDescriptors.length === 0) {
+      return res.status(404).json({ message: "No registered faces found in database." });
+    }
+
+    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+
+    // 🚨 RAM TRACKER 2: The Danger Zone (Right before processing image)
+    console.log(`🧠 RAM Usage Before AI Scan: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB / 512 MB Limit`);
+
+    // 3. Process the Uploaded Image
+    const img = await canvas.loadImage(req.file.buffer);
+
+    const detection = await faceapi
+      .detectSingleFace(img)
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+
+    // 🚨 RAM TRACKER 3: If the server survives the scan!
+    console.log(`🧠 RAM Usage After AI Scan: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`);
+
+    if (!detection) {
+      return res.status(400).json({ message: "No face detected." });
+    }
+
+    // 4. Find Best Match
+    const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+
+    if (bestMatch.label === "unknown") {
+      return res.status(404).json({ message: "Face not recognized." });
+    }
+
+    // 5. Log Attendance
+    const studentId = bestMatch.label;
+    const studentDoc = await db.collection("students").doc(studentId).get();
+
+    if (!studentDoc.exists) {
+      return res.status(404).json({ message: "Student not found." });
+    }
+
+    // ... inside the mark-attendance try block, after bestMatch logic ...
+
+    const studentName = studentDoc.data().studentName;
+
+    console.log(`📡 Sending to Firebase: Attendance for ${studentName}`);
+
+// 🚨 CHANGE: Store the result in a variable to confirm it saved
+    const today = new Date().toISOString().split("T")[0];
+
+// Check if attendance already exists for this student today
+const existingAttendance = await db
+  .collection("attendance")
+  .where("studentName", "==", studentName)
+  .where("date", "==", today)
+  .get();
+
+if (!existingAttendance.empty) {
+  console.log(`⚠️ Attendance already marked for ${studentName} today`);
+  return res.json({
+    success: false,
+    message: "Attendance already marked for today"
+  });
+}
+
+// If not marked, save attendance
+const docRef = await db.collection("attendance").add({
+  studentName: studentName,
+  studentId: studentId,
+  date: today,
+  timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  status: "Present"
+});
+
+console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
+
+    // 🚨 ONLY IF THIS LOG PRINTS is the data actually in the database
+    console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
+    console.log(`📍 Attendance Marked: ${studentName}`);
+
+  res.json({ success: true, message: "Attendance Marked", student: studentName });
+
+  } catch (error) {
+    console.error("Attendance Error:", error);
+    res.status(500).json({ message: "Server Error: " + error.message });
+  }
+});
+
+
+router.get("/students", async (req, res) => {
+  try {
+    const snapshot = await db.collection("students").orderBy("createdAt", "desc").get();
+
+    if (snapshot.empty) {
+      return res.json([]); // Return empty list if no students
+    }
+
+    const students = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json(students);
+  } catch (error) {
+    console.error("Fetch Error:", error);
+    res.status(500).json({ message: "Failed to fetch students" });
+  }
+});
+
+// --- 7. MANAGE STUDENTS ROUTES ---
+
+
+// PUT Update Student
+router.put("/students/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { studentName, grade, section, guardianName, guardianPhone } = req.body;
+
+    await db.collection("students").doc(id).update({
+      studentName, grade, section, guardianName, guardianPhone
+    });
+
+    res.json({ success: true, message: "Student Updated" });
+  } catch (error) {
+    console.error("Update Student Error:", error);
+    res.status(500).json({ message: "Failed to update student" });
+  }
+});
+
+// DELETE Student
+router.delete("/students/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.collection("students").doc(id).delete();
+    res.json({ success: true, message: "Student Deleted" });
+  } catch (error) {
+    console.error("Delete Student Error:", error);
+    res.status(500).json({ message: "Failed to delete student" });
+  }
+});
 
 module.exports = router;
