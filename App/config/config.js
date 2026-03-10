@@ -1,1 +1,1 @@
-export const API_URL = "http://192.168.8.178:3000/api";
+export const API_URL = "https://edutrack-pvh3.onrender.com/api";
