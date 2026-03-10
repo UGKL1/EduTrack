@@ -112,7 +112,52 @@ if (req.file) {
     hasFace = true;
   }
 }
+// 4. Check for duplicate face in database
+if (hasFace) {
+  const existingStudents = await db.collection("students").get();
 
+  const labeledDescriptors = existingStudents.docs
+    .map(doc => {
+      const data = doc.data();
+      if (!data.faceDescriptor || data.faceDescriptor.length !== 128) return null;
+      return new faceapi.LabeledFaceDescriptors(
+        data.studentName, // Use name so we can show it in the message
+        [new Float32Array(data.faceDescriptor)]
+      );
+    })
+    .filter(item => item !== null);
+
+  if (labeledDescriptors.length > 0) {
+    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.45); // 0.55 = strict threshold
+    const bestMatch = faceMatcher.findBestMatch(new Float32Array(descriptorArray));
+
+    // 🚨 CHANGE: We now check both label and distance to reduce false positives. Only block if it's a known face and the distance is very close.
+if (bestMatch.label !== "unknown" && bestMatch.distance <= 0.45) {
+  console.log(`⚠️ Duplicate face detected! Matches: ${bestMatch.label}`);
+  return res.status(409).json({
+    success: false,
+    message: `This person is already registered as "${bestMatch.label}". Duplicate enrollment blocked.`
+  });
+}
+
+    if (bestMatch.label !== "unknown") {
+      console.log(`⚠️ Duplicate face detected! Matches: ${bestMatch.label}`);
+      return res.status(409).json({
+        success: false,
+        message: `This person is already registered as "${bestMatch.label}". Duplicate enrollment blocked.`
+      });
+    }
+  }
+}
+
+// 5. Check if index number already exists
+const existingStudent = await db.collection("students").doc(indexNumber).get();
+if (existingStudent.exists) {
+  return res.status(409).json({
+    success: false,
+    message: `Index Number "${indexNumber}" is already taken.`
+  });
+}
 // 4. Save to Firestore
 console.log("Saving to Firestore with data:", {
       studentName, indexNumber, grade, section, guardianName, hasFace, descriptorLength: descriptorArray.length
