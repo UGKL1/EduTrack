@@ -42,10 +42,6 @@ export default function Dashboard({ navigation }) {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.profileCard, { backgroundColor: colors.card }]}>
         <Text style={[styles.profileHeader, { color: colors.text }]}>Dashboard</Text>
-        <Image
-          source={{ uri: userData?.profileImageUrl || 'https://placehold.co/100x100/A020F0/white?text=User' }}
-          style={styles.profileImage}
-        />
         <Text style={[styles.profileName, { color: colors.text }]}>
           {userData ? userData.username : 'User'}
         </Text>
@@ -95,7 +91,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 15,
-    paddingTop: 40,
+    paddingTop: 100,
   },
   loadingContainer: {
     justifyContent: 'center',

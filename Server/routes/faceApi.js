@@ -112,7 +112,52 @@ if (req.file) {
     hasFace = true;
   }
 }
+// 4. Check for duplicate face in database
+if (hasFace) {
+  const existingStudents = await db.collection("students").get();
 
+  const labeledDescriptors = existingStudents.docs
+    .map(doc => {
+      const data = doc.data();
+      if (!data.faceDescriptor || data.faceDescriptor.length !== 128) return null;
+      return new faceapi.LabeledFaceDescriptors(
+        data.studentName, // Use name so we can show it in the message
+        [new Float32Array(data.faceDescriptor)]
+      );
+    })
+    .filter(item => item !== null);
+
+  if (labeledDescriptors.length > 0) {
+    const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.45); // 0.55 = strict threshold
+    const bestMatch = faceMatcher.findBestMatch(new Float32Array(descriptorArray));
+
+    // 🚨 CHANGE: We now check both label and distance to reduce false positives. Only block if it's a known face and the distance is very close.
+if (bestMatch.label !== "unknown" && bestMatch.distance <= 0.45) {
+  console.log(`⚠️ Duplicate face detected! Matches: ${bestMatch.label}`);
+  return res.status(409).json({
+    success: false,
+    message: `This person is already registered as "${bestMatch.label}". Duplicate enrollment blocked.`
+  });
+}
+
+    if (bestMatch.label !== "unknown") {
+      console.log(`⚠️ Duplicate face detected! Matches: ${bestMatch.label}`);
+      return res.status(409).json({
+        success: false,
+        message: `This person is already registered as "${bestMatch.label}". Duplicate enrollment blocked.`
+      });
+    }
+  }
+}
+
+// 5. Check if index number already exists
+const existingStudent = await db.collection("students").doc(indexNumber).get();
+if (existingStudent.exists) {
+  return res.status(409).json({
+    success: false,
+    message: `Index Number "${indexNumber}" is already taken.`
+  });
+}
 // 4. Save to Firestore
 console.log("Saving to Firestore with data:", {
       studentName, indexNumber, grade, section, guardianName, hasFace, descriptorLength: descriptorArray.length
@@ -212,12 +257,33 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
     console.log(`📡 Sending to Firebase: Attendance for ${studentName}`);
 
 // 🚨 CHANGE: Store the result in a variable to confirm it saved
-    const docRef = await db.collection("attendance").add({
-      studentName: studentName,
-      date: new Date().toISOString().split('T')[0],
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      status: "Present"
-    });
+    const today = new Date().toISOString().split("T")[0];
+
+// Check if attendance already exists for this student today
+const existingAttendance = await db
+  .collection("attendance")
+  .where("studentName", "==", studentName)
+  .where("date", "==", today)
+  .get();
+
+if (!existingAttendance.empty) {
+  console.log(`⚠️ Attendance already marked for ${studentName} today`);
+  return res.json({
+    success: false,
+    message: "Attendance already marked for today"
+  });
+}
+
+// If not marked, save attendance
+const docRef = await db.collection("attendance").add({
+  studentName: studentName,
+  studentId: studentId,
+  date: today,
+  timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  status: "Present"
+});
+
+console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
 
     // 🚨 ONLY IF THIS LOG PRINTS is the data actually in the database
     console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
