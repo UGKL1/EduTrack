@@ -91,13 +91,13 @@ export default function AttendanceReports({ navigation }) {
         const data = doc.data();
         // Map Name or ID to details. Using Name for now as Attendance stores Name.
         // Ideally Attendance should store StudentID. 
-        if (data.studentName) {
-          map[data.studentName] = {
-            grade: data.grade,
-            section: data.section,
-            id: doc.id
-          };
-        }
+        if (data.studentId) {
+  map[data.studentId] = {
+    grade: data.grade,
+    section: data.section,
+    name: data.studentName
+  };
+}
       });
       setStudentsMap(map);
     } catch (err) {
@@ -119,7 +119,7 @@ export default function AttendanceReports({ navigation }) {
         // Query for specific date
         // Note: Stored date is 'YYYY-MM-DD'
         const dateStr = date.toISOString().split('T')[0];
-        q = query(attRef, where('date', '==', dateStr));
+        q = query(attRef, where('date', '==', dateStr), orderBy('timestamp', 'desc'));
       } else {
         // All time - might want to limit this in production!
         q = query(attRef, orderBy('timestamp', 'desc'));
@@ -130,7 +130,7 @@ export default function AttendanceReports({ navigation }) {
 
       snapshot.forEach(doc => {
         const data = doc.data();
-        const studentInfo = studentsMap[data.studentName] || {};
+        const studentInfo = studentsMap[data.studentId] || {};
 
         records.push({
           id: doc.id,
