@@ -28,10 +28,14 @@ export default function ManageStudent() {
       const response = await axios.get(`${API_URL}/students`);
       let allStudents = response.data;
 
+      console.log("USER grade:", user?.grade, typeof user?.grade);
+      console.log("STUDENT grade:", allStudents[0]?.grade, typeof allStudents[0]?.grade);
+
       // Filter for Teachers
       if (user?.role === 'Teacher') {
         allStudents = allStudents.filter(student =>
-          student.grade === user.grade && student.section === user.section
+          String(student.grade) === String(user.grade) &&
+          String(student.section).toUpperCase() === String(user.section).toUpperCase()
         );
       }
 
@@ -47,10 +51,12 @@ export default function ManageStudent() {
 
   // --- 2. Auto-Reload when screen opens/returns or URL updates ---
   useFocusEffect(
-    useCallback(() => {
+  useCallback(() => {
+    if (user !== undefined) {
       fetchStudents();
-    }, [])
-  );
+    }
+  }, [user])
+);
 
   // --- 3. Filter Logic for Search ---
   const filteredStudents = students.filter(student =>
