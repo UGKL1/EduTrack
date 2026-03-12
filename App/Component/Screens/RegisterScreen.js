@@ -80,7 +80,7 @@ export default function RegisterScreen({ navigation }) {
       });
 
       // 🔔 Add notification
-      await notifyStudentRegistered(name);
+      await notifyStudentRegistered(name, grade, section);
       await sendAdminNotification(
         `New Student Registered: ${name} (Grade ${grade}-${section})`,
         'success'
