@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -6,27 +6,17 @@ import {
   Image,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
 import { signOut } from 'firebase/auth';
-import { auth, firestore } from '../../config/firebase'; // Ensure firestore is imported
-import {
-  collection,
-  addDoc,
-  doc,
-  getDoc,
-  serverTimestamp,
-  setDoc,
-} from 'firebase/firestore'; // Import Firestore functions
+import { auth } from '../../config/firebase';
 import Toast from 'react-native-toast-message';
 
 export default function QuickAccess() {
   const navigation = useNavigation();
   const { colors } = useTheme();
-  const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -38,98 +28,10 @@ export default function QuickAccess() {
     }
   };
 
-  // --- MAGIC DATA GENERATOR ---
-  const generateDemoData = async () => {
-    setLoading(true);
-    try {
-      // 1. Get Current Teacher's Info
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const teacherRef = doc(firestore, 'teachers', user.uid);
-      const teacherSnap = await getDoc(teacherRef);
-
-      if (!teacherSnap.exists()) {
-        Alert.alert('Error', 'Teacher profile not found.');
-        setLoading(false);
-        return;
-      }
-
-      const { grade, section } = teacherSnap.data();
-
-      if (!grade || !section) {
-        Alert.alert(
-          'Missing Info',
-          'Please update your Profile with Grade & Section first.',
-        );
-        setLoading(false);
-        return;
-      }
-
-      console.log(`Generating data for Grade ${grade} - ${section}...`);
-
-      // 2. Create 5 Dummy Students
-      const dummyStudents = [
-        { name: 'Saman Kumara', id: 'ST001' },
-        { name: 'Nimal Perera', id: 'ST002' },
-        { name: 'Kamal Silva', id: 'ST003' },
-        { name: 'Mala De Alwis', id: 'ST004' },
-        { name: 'Chathura J', id: 'ST005' },
-      ];
-
-      for (const student of dummyStudents) {
-        // Use setDoc with ID to avoid duplicates if you run it twice
-        await setDoc(doc(firestore, 'students', student.id), {
-          studentName: student.name,
-          studentId: student.id,
-          grade: grade.toString(), // Ensure it matches Teacher's grade
-          section: section.toString(),
-          guardianName: 'Parent of ' + student.name,
-          guardianPhone: '0771234567',
-          homeAddress: '123 Fake St',
-          createdAt: serverTimestamp(),
-        });
-
-        // 3. Generate 30 Days of Attendance for this student
-        // We create a loop for the past 30 days
-        for (let i = 0; i < 30; i++) {
-          const date = new Date();
-          date.setDate(date.getDate() - i); // Go back 'i' days
-
-          // Skip weekends (optional, but realistic)
-          const day = date.getDay();
-          if (day === 0 || day === 6) continue;
-
-          // 80% chance of being present
-          if (Math.random() > 0.2) {
-            const dateString = date.toISOString().split('T')[0];
-            await addDoc(collection(firestore, 'attendance'), {
-              studentName: student.name,
-              date: dateString,
-              status: 'Present',
-              timestamp: date, // For sorting
-            });
-          }
-        }
-      }
-
-      Alert.alert(
-        'Success',
-        `Added 5 students and attendance records for Class ${grade}-${section}!`,
-      );
-    } catch (error) {
-      console.error('Generator Error:', error);
-      Alert.alert('Error', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const ActionButton = ({ label, icon, onPress, color }) => (
     <TouchableOpacity
       style={[styles.actionButton, color && { backgroundColor: color }]}
       onPress={onPress}
-      disabled={loading}
     >
       <Text style={styles.buttonText}>{label}</Text>
       <FontAwesome5
@@ -168,18 +70,6 @@ export default function QuickAccess() {
       </View>
 
       <View style={styles.buttonGroup}>
-        {/* MAGIC BUTTON */}
-        {loading ? (
-          <ActivityIndicator size="large" color={colors.primary} />
-        ) : (
-          <ActionButton
-            label="⚡ Generate Demo Data (Run Once)"
-            icon="magic"
-            color="#9C27B0" // Purple color to stand out
-            onPress={generateDemoData}
-          />
-        )}
-
         <ActionButton
           label="Export Report"
           icon="file-alt"
