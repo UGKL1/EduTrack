@@ -9,6 +9,7 @@ import { useTheme } from '../../context/ThemeContext'; // Import Theme Hook
 import useAuth from '../../hooks/useAuth'; // Import Auth Hook
 import axios from 'axios';
 import { API_URL } from '../../config/config';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 export default function ManageStudent() {
   const navigation = useNavigation();
@@ -20,6 +21,11 @@ export default function ManageStudent() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [gradeOpen, setGradeOpen] = useState(false);
+const [selectedGrade, setSelectedGrade] = useState(null);
+
+const [sectionOpen, setSectionOpen] = useState(false);
+const [selectedSection, setSelectedSection] = useState(null);
 
   // --- 1. Fetch Students from Server ---
   const fetchStudents = async () => {
@@ -59,11 +65,21 @@ export default function ManageStudent() {
 );
 
   // --- 3. Filter Logic for Search ---
-  const filteredStudents = students.filter(student =>
+  const filteredStudents = students.filter(student => {
+  const matchesSearch =
     student.studentName?.toLowerCase().includes(searchText.toLowerCase()) ||
-    student.studentId?.toLowerCase().includes(searchText.toLowerCase())
-  );
+    student.studentId?.toLowerCase().includes(searchText.toLowerCase());
 
+  const matchesGrade = selectedGrade
+    ? String(student.grade) === String(selectedGrade)
+    : true;
+
+  const matchesSection = selectedSection
+    ? String(student.section).toUpperCase() === String(selectedSection).toUpperCase()
+    : true;
+
+  return matchesSearch && matchesGrade && matchesSection;
+});
   // --- 4. Render Student Card ---
   const renderStudent = ({ item }) => (
     <TouchableOpacity
@@ -111,28 +127,87 @@ export default function ManageStudent() {
           onChangeText={setSearchText}
         />
       </View>
+      {/* Admin Grade/Section Filter */}
+{user?.role === 'Admin' && (
+  <View style={{ flexDirection: 'row', marginBottom: 15, zIndex: 9999, overflow: 'visible' }}>
+    <View style={{ flex: 1, marginRight: 5, overflow: 'visible' }}>
+      <DropDownPicker
+        open={gradeOpen}
+        value={selectedGrade}
+        items={[
+          { label: 'All Grades', value: null },
+          { label: 'Grade 1', value: '1' },
+          { label: 'Grade 2', value: '2' },
+          { label: 'Grade 3', value: '3' },
+          { label: 'Grade 4', value: '4' },
+          { label: 'Grade 5', value: '5' },
+          { label: 'Grade 6', value: '6' },
+          { label: 'Grade 7', value: '7' },
+          { label: 'Grade 8', value: '8' },
+          { label: 'Grade 9', value: '9' },
+          { label: 'Grade 10', value: '10' },
+          { label: 'Grade 11', value: '11' },
+          { label: 'Grade 12', value: '12' },
+          { label: 'Grade 13', value: '13' },
+        ]}
+        setOpen={setGradeOpen}
+        setValue={setSelectedGrade}
+        onOpen={() => setSectionOpen(false)}
+        placeholder="Grade"
+        listMode="FLATLIST"
+        maxHeight={200}
+        style={{ backgroundColor: colors.card, borderColor: colors.border, borderRadius: 10 }}
+        dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.border }}
+        textStyle={{ color: colors.text }}
+      />
+    </View>
+    <View style={{ flex: 1, marginLeft: 5 }}>
+      <DropDownPicker
+        open={sectionOpen}
+        value={selectedSection}
+        items={[
+          { label: 'All Sections', value: null },
+          { label: 'A', value: 'A' },
+          { label: 'B', value: 'B' },
+          { label: 'C', value: 'C' },
+          { label: 'D', value: 'D' },
+          { label: 'E', value: 'E' },
+        ]}
+        setOpen={setSectionOpen}
+        setValue={setSelectedSection}
+        onOpen={() => setGradeOpen(false)}
+        placeholder="Section"
+        style={{ backgroundColor: colors.card, borderColor: colors.border, borderRadius: 10 }}
+        dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.border }}
+        textStyle={{ color: colors.text }}
+      />
+    </View>
+  </View>
+)}
 
+      
       {/* Content Area */}
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.primary || "#4A90E2"} style={{ marginTop: 20 }} />
-      ) : (
-        <FlatList
-          data={filteredStudents}
-          keyExtractor={(item) => item.studentId}
-          renderItem={renderStudent}
-          contentContainerStyle={{ paddingBottom: 100 }} // Space for Bottom Nav
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchStudents(); }} />
-          }
-          ListEmptyComponent={
-            <View style={{ alignItems: 'center', marginTop: 50 }}>
-              <FontAwesome5 name="user-slash" size={40} color={colors.placeholder} />
-              <Text style={{ color: colors.placeholder, marginTop: 10 }}>No students found.</Text>
-            </View>
-          }
-        />
-      )}
-
+<View style={{ flex: 1, zIndex: 1 }}>
+  {loading ? (
+    <ActivityIndicator size="large" color={colors.primary || "#4A90E2"} style={{ marginTop: 20 }} />
+  ) : (
+    <FlatList
+      data={filteredStudents}
+      keyExtractor={(item) => item.studentId}
+      renderItem={renderStudent}
+      contentContainerStyle={{ paddingBottom: 100 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchStudents(); }} />
+      }
+      ListEmptyComponent={
+        <View style={{ alignItems: 'center', marginTop: 50 }}>
+          <FontAwesome5 name="user-slash" size={40} color={colors.placeholder} />
+          <Text style={{ color: colors.placeholder, marginTop: 10 }}>No students found.</Text>
+        </View>
+      }
+    />
+  )}
+</View>
       {/* FLOATING ADD BUTTON */}
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: '#007AFF' }]}
@@ -156,7 +231,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 40,
     paddingHorizontal: 20,
-    paddingBottom: 0, // Removed paddingBottom to let FlatList handle scrolling
+    paddingBottom: 0,
+    zIndex: 1,
   },
   header: {
     flexDirection: 'row',
