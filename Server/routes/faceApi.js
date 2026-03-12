@@ -13,7 +13,7 @@ try {
   // Check if we are in production (Render) with a standard environment variable
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.log("🔒 Loading Firebase credentials from environment variable...");
-    // 🚨 FIX IS HERE: We just parse the raw string directly now! No more Buffer.from or base64.
+    // We just parse the raw string directly now! No more Buffer.from or base64.
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   } else {
     // Fallback to local file for development
@@ -43,7 +43,7 @@ try {
 
 const db = admin.firestore();
 
-// --- 2. SETUP FACE API ENV ---
+// --- 2.SETUP FACE API ENV ---
 const { Canvas, Image, ImageData } = canvas;
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 
@@ -86,7 +86,7 @@ router.post("/enroll-student", upload.single("faceImage"), async (req, res) => {
   if (!modelsLoaded) return res.status(503).json({ message: "Server initializing..." });
 
   try {
-    // 1. Get Data (Note: We now accept indexNumber instead of studentId)
+    // 1. Get Data (We now accept indexNumber instead of studentId)
     const { studentName, indexNumber, guardianName, contactNumber, homeAddress, grade, section } = req.body;
 
     // 2. Validate Required Text Fields
@@ -131,7 +131,7 @@ if (hasFace) {
     const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.45); // 0.55 = strict threshold
     const bestMatch = faceMatcher.findBestMatch(new Float32Array(descriptorArray));
 
-    // 🚨 CHANGE: We now check both label and distance to reduce false positives. Only block if it's a known face and the distance is very close.
+    // We now check both label and distance to reduce false positives. Only block if it's a known face and the distance is very close.
 if (bestMatch.label !== "unknown" && bestMatch.distance <= 0.45) {
   console.log(`⚠️ Duplicate face detected! Matches: ${bestMatch.label}`);
   return res.status(409).json({
@@ -188,7 +188,7 @@ console.log("Saving to Firestore with data:", {
 router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => {
   if (!modelsLoaded) return res.status(503).json({ message: "Server initializing..." });
 
-  // 🚨 RAM TRACKER 1: Server starting the request
+  // Server starting the request
   console.log(`🧠 RAM Usage Start: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`);
 
   try {
@@ -217,7 +217,7 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
 
     const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
 
-    // 🚨 RAM TRACKER 2: The Danger Zone (Right before processing image)
+    // The Danger Zone (Right before processing image)
     console.log(`🧠 RAM Usage Before AI Scan: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB / 512 MB Limit`);
 
     // 3. Process the Uploaded Image
@@ -228,7 +228,7 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
       .withFaceLandmarks()
       .withFaceDescriptor();
 
-    // 🚨 RAM TRACKER 3: If the server survives the scan!
+    // If the server survives the scan!
     console.log(`🧠 RAM Usage After AI Scan: ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB`);
 
     if (!detection) {
@@ -256,7 +256,7 @@ router.post("/mark-attendance", upload.single("faceImage"), async (req, res) => 
 
     console.log(`📡 Sending to Firebase: Attendance for ${studentName}`);
 
-// 🚨 CHANGE: Store the result in a variable to confirm it saved
+// Store the result in a variable to confirm it saved
     const today = new Date().toISOString().split("T")[0];
 
 // Check if attendance already exists for this student today
@@ -285,7 +285,7 @@ const docRef = await db.collection("attendance").add({
 
 console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
 
-    // 🚨 ONLY IF THIS LOG PRINTS is the data actually in the database
+    // ONLY IF THIS LOG PRINTS is the data actually in the database
     console.log(`✅ Success! Data saved with ID: ${docRef.id}`);
     console.log(`📍 Attendance Marked: ${studentName}`);
 

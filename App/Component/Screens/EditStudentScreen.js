@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import useAuth from '../../hooks/useAuth';
 
-// 🚨 FIXED: Directly importing the bulletproof URL from your config
+// Directly importing the bulletproof URL from your config
 import { API_URL } from '../../config/config';
 
 export default function EditStudentScreen({ route, navigation }) {
@@ -29,7 +29,7 @@ export default function EditStudentScreen({ route, navigation }) {
 
     // --- UPDATE FUNCTION ---
     const handleUpdate = async () => {
-        // 🚨 VALIDATION CHECK
+        // VALIDATION CHECK
         if (!name || !indexNumber || !grade || !section || !guardianName || !contactNumber || !address) {
             return Alert.alert("Missing Data", "All fields are required.");
         }

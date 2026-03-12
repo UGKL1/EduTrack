@@ -8,9 +8,14 @@ import { firestore } from '../../config/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import useAuth from '../../hooks/useAuth';
 
 export default function AttendanceReports({ navigation }) {
   const { colors, isDark } = useTheme();
+  const { user } = useAuth();
+const teacherGrade = user?.grade || null;
+const teacherSection = user?.section || null;
+const isAdmin = user?.role === 'Admin';
 
   // Date State
   const [date, setDate] = useState(new Date());
@@ -34,34 +39,41 @@ export default function AttendanceReports({ navigation }) {
   const [searchName, setSearchName] = useState('');
 
   const [gradeOpen, setGradeOpen] = useState(false);
-  const [selectedGrade, setSelectedGrade] = useState(null);
-  const [gradeItems] = useState([
-    { label: 'All Grades', value: null },
-    { label: 'Grade 1', value: '1' },
-    { label: 'Grade 2', value: '2' },
-    { label: 'Grade 3', value: '3' },
-    { label: 'Grade 4', value: '4' },
-    { label: 'Grade 5', value: '5' },
-    { label: 'Grade 6', value: '6' },
-    { label: 'Grade 7', value: '7' },
-    { label: 'Grade 8', value: '8' },
-    { label: 'Grade 9', value: '9' },
-    { label: 'Grade 10', value: '10' },
-    { label: 'Grade 11', value: '11' },
-    { label: 'Grade 12', value: '12' },
-    { label: 'Grade 13', value: '13' },
-  ]);
-
+  const [selectedGrade, setSelectedGrade] = useState(isAdmin ? null : teacherGrade);
+  const [gradeItems] = useState(
+  isAdmin
+    ? [
+        { label: 'All Grades', value: null },
+        { label: 'Grade 1', value: '1' },
+        { label: 'Grade 2', value: '2' },
+        { label: 'Grade 3', value: '3' },
+        { label: 'Grade 4', value: '4' },
+        { label: 'Grade 5', value: '5' },
+        { label: 'Grade 6', value: '6' },
+        { label: 'Grade 7', value: '7' },
+        { label: 'Grade 8', value: '8' },
+        { label: 'Grade 9', value: '9' },
+        { label: 'Grade 10', value: '10' },
+        { label: 'Grade 11', value: '11' },
+        { label: 'Grade 12', value: '12' },
+        { label: 'Grade 13', value: '13' },
+      ]
+    : [{ label: `Grade ${teacherGrade}`, value: teacherGrade }]
+);
   const [sectionOpen, setSectionOpen] = useState(false);
-  const [selectedSection, setSelectedSection] = useState(null);
-  const [sectionItems] = useState([
-    { label: 'All Sections', value: null },
-    { label: 'A', value: 'A' },
-    { label: 'B', value: 'B' },
-    { label: 'C', value: 'C' },
-    { label: 'D', value: 'D' },
-    { label: 'E', value: 'E' },
-  ]);
+  const [selectedSection, setSelectedSection] = useState(isAdmin ? null : teacherSection);
+  const [sectionItems] = useState(
+  isAdmin
+    ? [
+        { label: 'All Sections', value: null },
+        { label: 'A', value: 'A' },
+        { label: 'B', value: 'B' },
+        { label: 'C', value: 'C' },
+        { label: 'D', value: 'D' },
+        { label: 'E', value: 'E' },
+      ]
+    : [{ label: teacherSection, value: teacherSection }]
+);
 
   // Initial Data Load
   useEffect(() => {
@@ -110,44 +122,51 @@ export default function AttendanceReports({ navigation }) {
 
   // 2. Fetch Attendance Data
   const fetchAttendance = async () => {
-    setLoading(true);
-    try {
-      let q;
-      const attRef = collection(firestore, 'attendance');
+  setLoading(true);
+  try {
+    const attRef = collection(firestore, 'attendance');
+    let querySnapshot;
 
-      if (reportType === 'Daily') {
-        // Query for specific date
-        // Note: Stored date is 'YYYY-MM-DD'
-        const dateStr = date.toISOString().split('T')[0];
-        q = query(attRef, where('date', '==', dateStr), orderBy('timestamp', 'desc'));
-      } else {
-        // All time - might want to limit this in production!
-        q = query(attRef, orderBy('timestamp', 'desc'));
+    if (reportType === 'Daily') {
+      const dateStr = date.toISOString().split('T')[0];
+      const q = query(attRef, where('date', '==', dateStr));
+      querySnapshot = await getDocs(q);
+    } else {
+      const q = query(attRef);
+      querySnapshot = await getDocs(q);
+    }
+
+    const records = [];
+
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      const studentInfo = studentsMap[data.studentId] || {};
+       console.log("ATTENDANCE RECORD:", JSON.stringify(data));
+  console.log("STUDENT INFO:", JSON.stringify(studentInfo));
+
+      const recordGrade = studentInfo.grade || 'N/A';
+      const recordSection = studentInfo.section || 'N/A';
+
+      if (!isAdmin && (recordGrade !== teacherGrade || recordSection !== teacherSection)) {
+        return;
       }
 
-      const snapshot = await getDocs(q);
-      const records = [];
-
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const studentInfo = studentsMap[data.studentId] || {};
-
-        records.push({
-          id: doc.id,
-          ...data,
-          grade: studentInfo.grade || 'N/A',
-          section: studentInfo.section || 'N/A',
-        });
+      records.push({
+        id: doc.id,
+        ...data,
+        grade: recordGrade,
+        section: recordSection,
       });
+    });
 
-      setAttendanceList(records);
-    } catch (err) {
-      console.error("Error fetching attendance:", err);
-      Alert.alert("Error", "Could not load attendance records.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setAttendanceList(records);
+  } catch (err) {
+    console.error("Error fetching attendance:", err);
+    Alert.alert("Error", "Could not load attendance records.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // 3. Filter Data
   const filterData = () => {
@@ -293,31 +312,33 @@ export default function AttendanceReports({ navigation }) {
         <View style={styles.row}>
           <View style={{ flex: 1, marginRight: 5 }}>
             <DropDownPicker
-              open={gradeOpen}
-              value={selectedGrade}
-              items={gradeItems}
-              setOpen={setGradeOpen}
-              setValue={setSelectedGrade}
-              onOpen={() => setSectionOpen(false)}
-              placeholder="Grade"
-              style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]}
-              dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.border }}
-              textStyle={{ color: colors.text }}
-            />
+  open={gradeOpen}
+  value={selectedGrade}
+  items={gradeItems}
+  setOpen={isAdmin ? setGradeOpen : () => {}}
+  setValue={isAdmin ? setSelectedGrade : () => {}}
+  onOpen={() => setSectionOpen(false)}
+  placeholder="Grade"
+  disabled={!isAdmin}
+  style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border, opacity: isAdmin ? 1 : 0.7 }]}
+  dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.border }}
+  textStyle={{ color: colors.text }}
+/>
           </View>
           <View style={{ flex: 1, marginLeft: 5 }}>
             <DropDownPicker
-              open={sectionOpen}
-              value={selectedSection}
-              items={sectionItems}
-              setOpen={setSectionOpen}
-              setValue={setSelectedSection}
-              onOpen={() => setGradeOpen(false)}
-              placeholder="Section"
-              style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]}
-              dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.border }}
-              textStyle={{ color: colors.text }}
-            />
+  open={sectionOpen}
+  value={selectedSection}
+  items={sectionItems}
+  setOpen={isAdmin ? setSectionOpen : () => {}}
+  setValue={isAdmin ? setSelectedSection : () => {}}
+  onOpen={() => setGradeOpen(false)}
+  placeholder="Section"
+  disabled={!isAdmin}
+  style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border, opacity: isAdmin ? 1 : 0.7 }]}
+  dropDownContainerStyle={{ backgroundColor: colors.card, borderColor: colors.border }}
+  textStyle={{ color: colors.text }}
+/>
           </View>
         </View>
       </View>

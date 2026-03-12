@@ -7,7 +7,7 @@ import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { useTheme } from '../../context/ThemeContext';
 
-// 🚨 FIXED: Directly importing the bulletproof URL from your config
+// Directly importing the bulletproof URL from your config
 import { API_URL } from '../../config/config';
 
 export default function AttendanceScreen({ navigation }) {
@@ -96,7 +96,7 @@ export default function AttendanceScreen({ navigation }) {
         type: `image/${fileType}`,
       });
 
-      // 🚨 FIXED: Now using the hardcoded API_URL from config.js
+      // Now using the hardcoded API_URL from config.js
       const res = await axios.post(
         `${API_URL}/mark-attendance`,
         formData,
