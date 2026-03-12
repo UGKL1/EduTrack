@@ -1,0 +1,15 @@
+Index: config/config.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\nexport const API_URL = \"https://edutrack-pvh3.onrender.com/api\";\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/config/config.js b/config/config.js
+--- a/config/config.js	(revision ed0ebb14efa8a9efadc5dd257e442ea6b917097f)
++++ b/config/config.js	(date 1773247108549)
+@@ -1,3 +1,4 @@
+ 
+ export const API_URL = "https://edutrack-pvh3.onrender.com/api";
+ 
++
