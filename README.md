@@ -166,8 +166,8 @@ node index.js
 - 🎓 **Supervisor:** U.G.K.L. Senarathna
 - 👨‍💻 **Lead Development / Project Manage** K.R.A.R. Jayathilaka
 - 🎨 **UI/UX / Backend Development** L.G.S.B. Liyanage
-- 📱 **Frontend Develpment / QA and Testing ** F.F. Shamra
-- 🧪 **Frontend Develpment / QA and Testing ** Z.I.K. Nuha
+- 📱 **Frontend Develpment / QA and Testing** F.F. Shamra
+- 🧪 **Frontend Develpment / QA and Testing** Z.I.K. Nuha
 - 📋 **UI/UX / Frontend Develpment:** M.S. Hafsa
 
 ---
