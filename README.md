@@ -168,7 +168,7 @@ node index.js
 - 🎨 **UI/UX / Backend Development** L.G.S.B. Liyanage
 - 📱 **Frontend Develpment / QA and Testing ** F.F. Shamra
 - 🧪 **Frontend Develpment / QA and Testing ** Z.I.K. Nuha
-- 📋 **UI/UX / Documentation:** M.S. Hafsa
+- 📋 **UI/UX / Frontend Develpment:** M.S. Hafsa
 
 ---
 
